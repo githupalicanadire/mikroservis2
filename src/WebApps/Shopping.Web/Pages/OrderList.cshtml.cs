@@ -19,7 +19,7 @@ namespace Shopping.Web.Pages
             try
             {
                 var userIdentifier = userService.GetSecureUserIdentifier();
-                var userName = userService.GetCurrentUserName() ?? userService.GetCurrentUserEmail();
+                var userName = userService.GetCurrentUserName() ?? userService.GetCurrentUserEmail() ?? "Unknown User";
                 CurrentUserName = userName;
 
                 logger.LogInformation("Loading orders for user: {UserId}", userIdentifier);
