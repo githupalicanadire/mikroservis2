@@ -86,9 +86,52 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        // Ensure database is created
-        context.Database.EnsureCreated();
-        logger.LogInformation("Database ensured created");
+        // Wait for database to be ready with retry logic
+        int retryCount = 0;
+        int maxRetries = 30; // 30 * 2 seconds = 60 seconds max wait
+
+        while (retryCount < maxRetries)
+        {
+            try
+            {
+                logger.LogInformation("Attempting to connect to database (attempt {Attempt}/{MaxRetries})", retryCount + 1, maxRetries);
+
+                // Test connection
+                await context.Database.CanConnectAsync();
+                logger.LogInformation("Database connection successful");
+
+                // Apply migrations if any exist, otherwise ensure created
+                var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+                if (pendingMigrations.Any())
+                {
+                    logger.LogInformation("Applying {MigrationCount} pending migrations", pendingMigrations.Count());
+                    await context.Database.MigrateAsync();
+                    logger.LogInformation("Database migrations applied successfully");
+                }
+                else
+                {
+                    // Ensure database is created if no migrations
+                    await context.Database.EnsureCreatedAsync();
+                    logger.LogInformation("Database ensured created");
+                }
+
+                break; // Success, exit retry loop
+            }
+            catch (Exception dbEx)
+            {
+                retryCount++;
+                logger.LogWarning(dbEx, "Database connection attempt {Attempt} failed: {Message}", retryCount, dbEx.Message);
+
+                if (retryCount >= maxRetries)
+                {
+                    logger.LogError("Failed to connect to database after {MaxRetries} attempts", maxRetries);
+                    throw;
+                }
+
+                // Wait 2 seconds before retry
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+        }
 
         // Seed demo data
         await app.SeedDemoDataAsync();
@@ -97,6 +140,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         logger.LogError(ex, "An error occurred during database initialization");
+        // Don't throw - let the application start anyway for debugging
     }
 }
 
