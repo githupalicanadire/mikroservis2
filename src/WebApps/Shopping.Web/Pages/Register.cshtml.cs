@@ -70,6 +70,7 @@ public class RegisterModel : PageModel
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "An error occurred during registration for user {Email}", Input.Email);
             ErrorMessage = "An error occurred during registration. Please try again.";
             return Page();
         }
