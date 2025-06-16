@@ -1,12 +1,18 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Shopping.Web.Models.Ordering;
+using Shopping.Web.Services;
+
 namespace Shopping.Web.Pages
 {
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Authorize]
     public class OrderListModel
         (IOrderingService orderingService, IUserService userService, ILogger<OrderListModel> logger)
         : PageModel
     {
-        public IEnumerable<OrderModel> Orders { get; set; } = default!;
-        public string? CurrentUserName { get; set; }
+        public IEnumerable<OrderModel> OrderList { get; set; } = new List<OrderModel>();
+        public string CurrentUserName { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -22,20 +28,20 @@ namespace Shopping.Web.Pages
                 if (Guid.TryParse(userIdentifier, out var customerGuid))
                 {
                     var response = await orderingService.GetOrdersByCustomer(customerGuid);
-
+                    
                     if (response?.Orders != null)
                     {
                         // Additional security check: verify all returned orders belong to current user
-                        var userOrders = response.Orders.Where(order =>
+                        var userOrders = response.Orders.Where(order => 
                             order.CustomerId == customerGuid).ToList();
-
+                        
                         if (userOrders.Count != response.Orders.Count())
                         {
                             logger.LogWarning("Order service returned orders that don't belong to user {UserId}", userIdentifier);
                         }
-
+                        
                         OrderList = userOrders;
-                        logger.LogInformation("Successfully loaded {OrderCount} orders for user {UserId}",
+                        logger.LogInformation("Successfully loaded {OrderCount} orders for user {UserId}", 
                             OrderList.Count(), userIdentifier);
                     }
                     else
@@ -49,26 +55,6 @@ namespace Shopping.Web.Pages
                     logger.LogError("Invalid user identifier format: {UserId}", userIdentifier);
                     return RedirectToPage("/Login");
                 }
-
-            logger.LogInformation("Loading order list for user: {UserName} (ID: {UserId})", userName, userId);
-
-            try
-            {
-                var customerId = Guid.Parse(userId);
-                var response = await orderingService.GetOrdersByCustomer(customerId);
-                Orders = response.Orders ?? new List<OrderModel>();
-
-                logger.LogInformation("Loaded {OrderCount} orders for user: {UserName}", Orders.Count(), userName);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error loading orders for user: {UserName}", userName);
-                Orders = new List<OrderModel>();
-            }
-
-            return Page();
-        }
-
             }
             catch (UnauthorizedAccessException)
             {
@@ -88,4 +74,5 @@ namespace Shopping.Web.Pages
 
             return Page();
         }
+    }
 }
