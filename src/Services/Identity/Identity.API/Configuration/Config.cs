@@ -1,5 +1,4 @@
-using Duende.IdentityServer;
-using Duende.IdentityServer.Models;
+using IdentityServer4;
 
 namespace Identity.API.Configuration;
 

@@ -1,9 +1,9 @@
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore;
-global using Duende.IdentityServer;
-global using Duende.IdentityServer.Models;
-global using Duende.IdentityServer.Services;
-global using Duende.IdentityServer.Stores;
+global using IdentityServer4;
+global using IdentityServer4.Models;
+global using IdentityServer4.Services;
+global using IdentityServer4.Stores;
 global using System.Security.Claims;
 global using System.ComponentModel.DataAnnotations;
