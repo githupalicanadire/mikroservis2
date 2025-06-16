@@ -8,45 +8,52 @@ namespace Shopping.Web.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
-            // Check if user is authenticated
-            if (!userService.IsAuthenticated())
+            try
             {
+                // Use secure user identifier instead of username/email
+                var userIdentifier = userService.GetSecureUserIdentifier();
+
+                Cart = await basketService.LoadUserBasket(userIdentifier);
+                logger.LogInformation("Cart loaded for user: {UserId}", userIdentifier);
+
+                return Page();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                logger.LogWarning("Unauthorized access attempt to cart");
                 return RedirectToPage("/Login");
             }
-
-            var userName = userService.GetCurrentUserName() ?? userService.GetCurrentUserEmail();
-            if (string.IsNullOrEmpty(userName))
+            catch (InvalidOperationException ex)
             {
-                logger.LogWarning("Could not determine user name for cart");
+                logger.LogError(ex, "Could not determine user identity for cart");
                 return RedirectToPage("/Login");
             }
-
-            Cart = await basketService.LoadUserBasket(userName);
-            logger.LogInformation("Cart loaded for user: {UserName}", userName);
-
-            return Page();
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading cart");
+                return RedirectToPage("/Index");
+            }
         }
 
         public async Task<IActionResult> OnPostRemoveToCartAsync(Guid productId)
         {
-            // Check if user is authenticated
-            if (!userService.IsAuthenticated())
+            try
             {
-                return RedirectToPage("/Login");
-            }
+                var userIdentifier = userService.GetSecureUserIdentifier();
 
-            var userName = userService.GetCurrentUserName() ?? userService.GetCurrentUserEmail();
-            if (string.IsNullOrEmpty(userName))
-            {
-                return RedirectToPage("/Login");
-            }
+                logger.LogInformation("Remove from cart for user: {UserId}, product: {ProductId}", userIdentifier, productId);
 
-            logger.LogInformation("Remove from cart button clicked for user: {UserName}, product: {ProductId}", userName, productId);
+                Cart = await basketService.LoadUserBasket(userIdentifier);
 
-            Cart = await basketService.LoadUserBasket(userName);
-            Cart.Items.RemoveAll(x => x.ProductId == productId);
+                // Verify cart belongs to current user
+                if (!string.Equals(Cart.UserName, userIdentifier, StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogWarning("User {UserId} attempted to modify cart that doesn't belong to them", userIdentifier);
+                    return RedirectToPage("/Login");
+                }
 
-            await basketService.StoreBasket(new StoreBasketRequest(Cart));
+                Cart.Items.RemoveAll(x => x.ProductId == productId);
+                await basketService.StoreBasket(new StoreBasketRequest(Cart));
             logger.LogInformation("Item removed from cart for user: {UserName}", userName);
 
             return RedirectToPage();
