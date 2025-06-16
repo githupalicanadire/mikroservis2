@@ -6,7 +6,8 @@ using Identity.API.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 // Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -21,7 +22,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
-    
+
     // User settings
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedEmail = false;
@@ -82,9 +83,9 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    
+
     context.Database.EnsureCreated();
-    
+
     // Seed default user
     if (!context.Users.Any())
     {
@@ -96,7 +97,7 @@ using (var scope = app.Services.CreateScope())
             LastName = "User",
             EmailConfirmed = true
         };
-        
+
         await userManager.CreateAsync(defaultUser, "Admin123!");
     }
 }
@@ -107,6 +108,10 @@ app.UseRouting();
 app.UseIdentityServer();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
 
