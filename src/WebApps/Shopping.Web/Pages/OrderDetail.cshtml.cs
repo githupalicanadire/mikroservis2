@@ -25,37 +25,42 @@ public class OrderDetailModel : PageModel
     {
         try
         {
-            // Check if user is authenticated
-            if (!_userService.IsAuthenticated())
-            {
-                return RedirectToPage("/Login");
-            }
+            var userIdentifier = _userService.GetSecureUserIdentifier();
 
             if (orderId == Guid.Empty)
             {
-                _logger.LogWarning("Empty order ID provided");
-                return NotFound();
+                _logger.LogWarning("Invalid order ID: {OrderId}", orderId);
+                return RedirectToPage("/OrderList");
             }
 
-            var userId = _userService.GetCurrentUserId();
-            var userName = _userService.GetCurrentUserName() ?? _userService.GetCurrentUserEmail();
+            _logger.LogInformation("Loading order detail for user: {UserId}, order: {OrderId}", userIdentifier, orderId);
 
-            if (string.IsNullOrEmpty(userId))
+            var response = await _orderingService.GetOrdersByName(orderId.ToString());
+
+            if (response?.Orders == null || !response.Orders.Any())
             {
-                // Generate deterministic GUID from username for demo
-                if (!string.IsNullOrEmpty(userName))
-                {
-                    using var md5 = System.Security.Cryptography.MD5.Create();
-                    var hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(userName));
-                    userId = new Guid(hash).ToString();
-                }
-                else
-                {
-                    return RedirectToPage("/Login");
-                }
+                _logger.LogWarning("Order {OrderId} not found", orderId);
+                return RedirectToPage("/OrderList");
             }
 
-            _logger.LogInformation("Loading order detail for user: {UserName}, order: {OrderId}", userName, orderId);
+            var order = response.Orders.FirstOrDefault();
+            if (order == null)
+            {
+                _logger.LogWarning("Order {OrderId} not found in response", orderId);
+                return RedirectToPage("/OrderList");
+            }
+
+            // Critical security check: ensure order belongs to current user
+            if (!Guid.TryParse(userIdentifier, out var currentUserGuid) ||
+                order.CustomerId != currentUserGuid)
+            {
+                _logger.LogWarning("User {UserId} attempted to access order {OrderId} that doesn't belong to them. Order belongs to {OwnerId}",
+                    userIdentifier, orderId, order.CustomerId);
+                return RedirectToPage("/OrderList");
+            }
+
+            Order = order;
+            var userName = _userService.GetCurrentUserName() ?? _userService.GetCurrentUserEmail();
 
             // Get user's orders and find the specific order
             var customerId = Guid.Parse(userId);
