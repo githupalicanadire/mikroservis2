@@ -149,8 +149,6 @@ services:
       - "6005:8080"
     extra_hosts:
       - "localhost:host-gateway"
-    ports:
-      - "6005:8080"
 
 volumes:
   postgres_catalog:
