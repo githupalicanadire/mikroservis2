@@ -10,7 +10,7 @@ public class LoginModel : PageModel
     [BindProperty]
     public LoginInputModel LoginData { get; set; } = default!;
 
-    public async Task<IActionResult> OnGetAsync(string? returnUrl = null)
+    public IActionResult OnGet(string? returnUrl = null)
     {
         // If user is already authenticated, redirect to return URL or home
         if (User.Identity?.IsAuthenticated == true)
@@ -18,13 +18,13 @@ public class LoginModel : PageModel
             return LocalRedirect(returnUrl ?? "/");
         }
 
-        // Redirect to Identity Server with return URL
-        var redirectUri = !string.IsNullOrEmpty(returnUrl) ? returnUrl : Url.Page("/Index");
-
-        return Challenge(new AuthenticationProperties
+        // Store returnUrl in TempData for use in OnPost
+        if (!string.IsNullOrEmpty(returnUrl))
         {
-            RedirectUri = redirectUri
-        }, "oidc");
+            TempData["ReturnUrl"] = returnUrl;
+        }
+
+        return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -40,10 +40,13 @@ public class LoginModel : PageModel
             return Page();
         }
 
+        // Get the return URL from TempData or default to Index
+        var returnUrl = TempData["ReturnUrl"]?.ToString() ?? Url.Page("/Index");
+
         // Redirect to Identity Server for authentication
         return Challenge(new AuthenticationProperties
         {
-            RedirectUri = Url.Page("/Index")
+            RedirectUri = returnUrl
         }, "oidc");
     }
 }
