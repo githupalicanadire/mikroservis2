@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "E-commerce microservices application built with .NET Core",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "node run-dev.js",
+    "dev:info": "node server.js",
+    "dev:docker": "node run-dev.js --docker",
     "start": "node server.js",
     "build": "echo 'This is a .NET project. Please use: dotnet build src/eshop-microservices.sln'",
     "test": "echo 'This is a .NET project. Please use: dotnet test src/eshop-microservices.sln'",
