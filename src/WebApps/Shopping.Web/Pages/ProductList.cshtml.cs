@@ -62,8 +62,8 @@ namespace Shopping.Web.Pages
                     .ToList();
 
                 logger.LogInformation(
-                    "Successfully loaded {Count} products for page {Page} of {TotalPages} (Total items: {TotalItems})", 
-                    ProductList.Count(), 
+                    "Successfully loaded {Count} products for page {Page} of {TotalPages} (Total items: {TotalItems})",
+                    ProductList.Count(),
                     CurrentPage,
                     TotalPages,
                     TotalItems);
@@ -81,33 +81,57 @@ namespace Shopping.Web.Pages
         {
             try
             {
-                logger.LogInformation("Add to cart button clicked for product {ProductId}", productId);
+                var userIdentifier = userService.GetSecureUserIdentifier();
+
+                logger.LogInformation("Add to cart from product list for user: {UserId}, product: {ProductId}", userIdentifier, productId);
 
                 var productResponse = await catalogService.GetProduct(productId);
-
                 if (productResponse?.Product == null)
                 {
                     logger.LogWarning("Product {ProductId} not found", productId);
                     return RedirectToPage("ProductList");
                 }
 
-                var basket = await basketService.LoadUserBasket();
+                var basket = await basketService.LoadUserBasket(userIdentifier);
 
-                basket.Items.Add(new ShoppingCartItemModel
+                // Security check: ensure loaded basket belongs to current user
+                if (!string.Equals(basket.UserName, userIdentifier, StringComparison.OrdinalIgnoreCase))
                 {
-                    ProductId = productId,
-                    ProductName = productResponse.Product.Name,
-                    Price = productResponse.Product.Price,
-                    Quantity = 1,
-                    Color = "Black"
-                });
+                    logger.LogWarning("User {UserId} got basket that doesn't belong to them", userIdentifier);
+                    // Create new basket for user
+                    basket = new ShoppingCartModel { UserName = userIdentifier, Items = new List<ShoppingCartItemModel>() };
+                }
+
+                // Check if product already exists in cart
+                var existingItem = basket.Items.FirstOrDefault(x => x.ProductId == productId);
+                if (existingItem != null)
+                {
+                    existingItem.Quantity += 1;
+                }
+                else
+                {
+                    basket.Items.Add(new ShoppingCartItemModel
+                    {
+                        ProductId = productId,
+                        ProductName = productResponse.Product.Name,
+                        Price = productResponse.Product.Price,
+                        Quantity = 1,
+                        Color = "Default"
+                    });
+                }
 
                 await basketService.StoreBasket(new StoreBasketRequest(basket));
-                logger.LogInformation("Product {ProductId} added to cart successfully", productId);
+                logger.LogInformation("Product {ProductId} added to cart for user {UserId}", productId, userIdentifier);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                logger.LogWarning("Unauthorized user attempted to add product {ProductId} to cart", productId);
+                TempData["ProductToAdd"] = productId;
+                return RedirectToPage("/Login", new { returnUrl = "/ProductList" });
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred while adding product {ProductId} to cart", productId);
+                logger.LogError(ex, "Error adding product {ProductId} to cart", productId);
             }
 
             return RedirectToPage("Cart");
