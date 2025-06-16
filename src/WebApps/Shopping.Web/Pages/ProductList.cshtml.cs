@@ -1,7 +1,7 @@
 namespace Shopping.Web.Pages
 {
     public class ProductListModel
-        (ICatalogService catalogService, IBasketService basketService, ILogger<ProductListModel> logger)
+        (ICatalogService catalogService, IBasketService basketService, IUserService userService, ILogger<ProductListModel> logger)
         : PageModel
     {
         public IEnumerable<string> CategoryList { get; set; } = [];
@@ -81,7 +81,7 @@ namespace Shopping.Web.Pages
         {
             try
             {
-                var userIdentifier = this.userService.GetSecureUserIdentifier();
+                var userIdentifier = userService.GetSecureUserIdentifier();
 
                 logger.LogInformation("Add to cart from product list for user: {UserId}, product: {ProductId}", userIdentifier, productId);
 
