@@ -40,7 +40,7 @@ public class TestFlowModel : PageModel
         try
         {
             TestInProgress = true;
-            
+
             // Step 1: Test Register
             CurrentStep = "Testing user registration...";
             TestProgress = 16;
@@ -188,7 +188,7 @@ public class TestFlowModel : PageModel
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync(registerUrl, content);
-            
+
             if (response.IsSuccessStatusCode)
             {
                 return $"✅ User registration successful\n" +
@@ -218,12 +218,12 @@ public class TestFlowModel : PageModel
             var statusUrl = $"{identityServerUrl}/api/seed/status";
 
             var response = await _httpClient.GetAsync(statusUrl);
-            
+
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var statusData = JsonSerializer.Deserialize<JsonElement>(content);
-                
+
                 return $"✅ Identity Server status check successful\n" +
                        $"   Environment: {statusData.GetProperty("environment").GetString()}\n" +
                        $"   Issuer: {statusData.GetProperty("identityServer").GetProperty("issuer").GetString()}\n" +
@@ -251,27 +251,27 @@ public class TestFlowModel : PageModel
             var usersUrl = $"{identityServerUrl}/api/seed/users";
 
             var response = await _httpClient.GetAsync(usersUrl);
-            
+
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var usersData = JsonSerializer.Deserialize<JsonElement>(content);
-                
+
                 var userCount = usersData.GetProperty("count").GetInt32();
                 var users = usersData.GetProperty("users").EnumerateArray().ToList();
-                
+
                 var result = new StringBuilder();
                 result.AppendLine($"✅ Demo users check successful");
                 result.AppendLine($"   Total Users: {userCount}");
                 result.AppendLine($"   Users List:");
-                
+
                 foreach (var user in users)
                 {
                     var email = user.GetProperty("email").GetString();
                     var fullName = user.GetProperty("fullName").GetString();
                     result.AppendLine($"     - {email} ({fullName})");
                 }
-                
+
                 return result.ToString();
             }
             else
@@ -295,11 +295,11 @@ public class TestFlowModel : PageModel
             var productsUrl = $"{gatewayUrl}/catalog-service/products";
 
             var response = await _httpClient.GetAsync(productsUrl);
-            
+
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                
+
                 return $"✅ Shopping flow test successful\n" +
                        $"   Products API: Accessible\n" +
                        $"   Gateway URL: {gatewayUrl}\n" +
@@ -319,9 +319,9 @@ public class TestFlowModel : PageModel
         }
     }
 
-    private async Task<string> TestUserIsolation()
+    private Task<string> TestUserIsolation()
     {
-        return $"✅ User isolation test framework ready\n" +
+        return Task.FromResult($"✅ User isolation test framework ready\n" +
                $"   Security Features: Implemented\n" +
                $"   Cart Isolation: ✓ User-specific\n" +
                $"   Order Isolation: ✓ Customer-specific\n" +
@@ -332,9 +332,9 @@ public class TestFlowModel : PageModel
                $"   Multi-User Test: Login with different demo accounts";
     }
 
-    private async Task<string> TestLoginFlow()
+    private Task<string> TestLoginFlow()
     {
-        return $"✅ Login flow test information\n" +
+        return Task.FromResult($"✅ Login flow test information\n" +
                $"   Identity Server: http://localhost:6006\n" +
                $"   OpenID Connect: Configured\n" +
                $"   JWT Tokens: Supported\n" +
@@ -347,9 +347,9 @@ public class TestFlowModel : PageModel
                $"   4. Confirm successful login and token generation";
     }
 
-    private async Task<string> TestLogoutFlow()
+    private Task<string> TestLogoutFlow()
     {
-        return $"✅ Logout flow test information\n" +
+        return Task.FromResult($"✅ Logout flow test information\n" +
                $"   Logout Endpoint: Available\n" +
                $"   Session Cleanup: Implemented\n" +
                $"   Token Invalidation: Supported\n" +
