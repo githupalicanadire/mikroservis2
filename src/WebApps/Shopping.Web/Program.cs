@@ -1,3 +1,8 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -19,19 +24,21 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie("Cookies", options =>
 {
-    options.Cookie.Name = "ToyShop.Auth";
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    options.LoginPath = "/Login";
+    options.LogoutPath = "/Logout";
+    options.AccessDeniedPath = "/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromHours(1);
     options.SlidingExpiration = true;
 })
 .AddOpenIdConnect("oidc", options =>
 {
     options.Authority = builder.Configuration["IdentityServer:BaseUrl"];
     options.ClientId = "shopping.web";
+    options.ClientSecret = "secret";
     options.ResponseType = "code";
     options.SaveTokens = true;
-    options.RequireHttpsMetadata = false; // Only for development
-
-    options.Scope.Clear();
+    options.GetClaimsFromUserInfoEndpoint = true;
+    options.RequireHttpsMetadata = false;
     options.Scope.Add("openid");
     options.Scope.Add("profile");
     options.Scope.Add("email");
@@ -39,35 +46,22 @@ builder.Services.AddAuthentication(options =>
     options.Scope.Add("catalog.api");
     options.Scope.Add("basket.api");
     options.Scope.Add("ordering.api");
-
-    options.GetClaimsFromUserInfoEndpoint = true;
-
-    options.Events = new Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents
+    options.UseTokenLifetime = true;
+    options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Events = new OpenIdConnectEvents
     {
-        OnAccessDenied = context =>
+        OnRedirectToIdentityProvider = context =>
         {
-            context.HandleResponse();
-            context.Response.Redirect("/");
-            return Task.CompletedTask;
-        },
-        OnAuthenticationFailed = context =>
-        {
-            // Log the error for debugging
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogError(context.Exception, "Authentication failed: {Error}", context.Exception.Message);
+            // Eğer login sayfasından geliyorsa, normal akışa devam et
+            if (context.Request.Path.StartsWithSegments("/Login"))
+            {
+                return Task.CompletedTask;
+            }
 
+            // Diğer durumlarda önce login sayfasına yönlendir
+            context.Response.Redirect("/Login?returnUrl=" + Uri.EscapeDataString(context.Request.Path + context.Request.QueryString));
             context.HandleResponse();
-            context.Response.Redirect($"/?error={Uri.EscapeDataString(context.Exception.Message)}");
-            return Task.CompletedTask;
-        },
-        OnRemoteFailure = context =>
-        {
-            // Log the error for debugging
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogError(context.Failure, "Remote authentication failure: {Error}", context.Failure?.Message);
-
-            context.HandleResponse();
-            context.Response.Redirect($"/?error={Uri.EscapeDataString(context.Failure?.Message ?? "Unknown error")}");
             return Task.CompletedTask;
         }
     };
@@ -125,7 +119,27 @@ app.Use(async (context, next) =>
     {
         // Store the original URL to redirect after login
         var returnUrl = context.Request.Path + context.Request.QueryString;
-        context.Response.Redirect($"/Login?returnUrl={Uri.EscapeDataString(returnUrl)}");
+        
+        // Add a message to inform the user why they are being redirected
+        string message;
+        if (path?.StartsWith("/cart") == true)
+        {
+            message = "Please login to access your shopping cart";
+        }
+        else if (path?.StartsWith("/orderlist") == true || path?.StartsWith("/orderdetail") == true)
+        {
+            message = "Please login to view your orders";
+        }
+        else if (path?.StartsWith("/checkout") == true)
+        {
+            message = "Please login to complete your checkout";
+        }
+        else
+        {
+            message = "Please login to continue";
+        }
+            
+        context.Response.Redirect($"/Login?returnUrl={Uri.EscapeDataString(returnUrl)}&message={Uri.EscapeDataString(message)}");
         return;
     }
 
