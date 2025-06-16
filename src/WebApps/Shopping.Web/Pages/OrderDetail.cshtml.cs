@@ -20,6 +20,7 @@ public class OrderDetailModel : PageModel
     }
 
     public OrderModel Order { get; set; } = default!;
+    public string CurrentUserName { get; set; } = default!;
 
     public async Task<IActionResult> OnGetAsync(Guid orderId)
     {
@@ -35,55 +36,56 @@ public class OrderDetailModel : PageModel
 
             _logger.LogInformation("Loading order detail for user: {UserId}, order: {OrderId}", userIdentifier, orderId);
 
-            var response = await _orderingService.GetOrdersByName(orderId.ToString());
-
-            if (response?.Orders == null || !response.Orders.Any())
+            // Parse user identifier as customer GUID
+            if (!Guid.TryParse(userIdentifier, out var customerGuid))
             {
-                _logger.LogWarning("Order {OrderId} not found", orderId);
-                return RedirectToPage("/OrderList");
+                _logger.LogError("Invalid user identifier format: {UserId}", userIdentifier);
+                return RedirectToPage("/Login");
             }
-
-            var order = response.Orders.FirstOrDefault();
-            if (order == null)
-            {
-                _logger.LogWarning("Order {OrderId} not found in response", orderId);
-                return RedirectToPage("/OrderList");
-            }
-
-            // Critical security check: ensure order belongs to current user
-            if (!Guid.TryParse(userIdentifier, out var currentUserGuid) ||
-                order.CustomerId != currentUserGuid)
-            {
-                _logger.LogWarning("User {UserId} attempted to access order {OrderId} that doesn't belong to them. Order belongs to {OwnerId}",
-                    userIdentifier, orderId, order.CustomerId);
-                return RedirectToPage("/OrderList");
-            }
-
-            Order = order;
-            var userName = _userService.GetCurrentUserName() ?? _userService.GetCurrentUserEmail();
 
             // Get user's orders and find the specific order
-            var customerId = Guid.Parse(userId);
-            var response = await _orderingService.GetOrdersByCustomer(customerId);
+            var response = await _orderingService.GetOrdersByCustomer(customerGuid);
 
-            if (response == null || response.Orders == null)
+            if (response == null || response.Orders == null || !response.Orders.Any())
             {
-                _logger.LogWarning("No orders found for customer: {UserName}", userName);
-                return NotFound();
+                _logger.LogWarning("No orders found for customer: {UserId}", userIdentifier);
+                TempData["ErrorMessage"] = "No orders found.";
+                return RedirectToPage("/OrderList");
             }
 
             var order = response.Orders.FirstOrDefault(o => o.Id == orderId);
             if (order == null)
             {
-                _logger.LogWarning("Order not found with ID: {OrderId} for user: {UserName}", orderId, userName);
+                _logger.LogWarning("Order not found with ID: {OrderId} for user: {UserId}", orderId, userIdentifier);
                 TempData["ErrorMessage"] = "Order not found or you don't have permission to view this order.";
                 return RedirectToPage("/OrderList");
             }
 
+            // Double-check security: ensure order belongs to current user
+            if (order.CustomerId != customerGuid)
+            {
+                _logger.LogWarning("User {UserId} attempted to access order {OrderId} that belongs to {OwnerId}", 
+                    userIdentifier, orderId, order.CustomerId);
+                TempData["ErrorMessage"] = "You don't have permission to view this order.";
+                return RedirectToPage("/OrderList");
+            }
+
             Order = order;
-            _logger.LogInformation("Order detail loaded for user: {UserName}, order: {OrderId}", userName, orderId);
+            CurrentUserName = _userService.GetCurrentUserName() ?? _userService.GetCurrentUserEmail() ?? "Unknown";
+
+            _logger.LogInformation("Order detail loaded successfully for user: {UserId}, order: {OrderId}", userIdentifier, orderId);
 
             return Page();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            _logger.LogWarning("Unauthorized access attempt to order detail");
+            return RedirectToPage("/Login");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Could not determine user identity for order detail");
+            return RedirectToPage("/Login");
         }
         catch (Exception ex)
         {
