@@ -22,41 +22,44 @@ namespace Shopping.Web.Pages
 
         public async Task<IActionResult> OnPostAddToCartAsync(Guid productId)
         {
-            // Check if user is authenticated for cart operations
-            if (!userService.IsAuthenticated())
+            try
             {
-                // Store intended action and redirect to login
-                TempData["ReturnUrl"] = $"/ProductDetail?productId={productId}";
-                TempData["Message"] = "Please login to add items to your cart.";
-                return RedirectToPage("/Login");
-            }
+                var userIdentifier = userService.GetSecureUserIdentifier();
 
-            var userName = userService.GetCurrentUserName() ?? userService.GetCurrentUserEmail();
-            if (string.IsNullOrEmpty(userName))
-            {
-                return RedirectToPage("/Login");
-            }
+                logger.LogInformation("Add to cart from product detail for user: {UserId}, product: {ProductId}", userIdentifier, productId);
 
-            logger.LogInformation("Add to cart button clicked by user: {UserName} for product: {ProductId}", userName, productId);
-
-            var productResponse = await catalogService.GetProduct(productId);
-            var basket = await basketService.LoadUserBasket(userName);
-
-            // Check if item already exists in cart
-            var existingItem = basket.Items.FirstOrDefault(x => x.ProductId == productId && x.Color == Color);
-            if (existingItem != null)
-            {
-                // Update quantity if item exists
-                existingItem.Quantity += Quantity;
-                logger.LogInformation("Updated existing item quantity in cart for user: {UserName}", userName);
-            }
-            else
-            {
-                // Add new item to cart
-                basket.Items.Add(new ShoppingCartItemModel
+                var productResponse = await catalogService.GetProduct(productId);
+                if (productResponse?.Product == null)
                 {
-                    ProductId = productId,
-                    ProductName = productResponse.Product.Name,
+                    logger.LogWarning("Product {ProductId} not found", productId);
+                    return RedirectToPage();
+                }
+
+                var basket = await basketService.LoadUserBasket(userIdentifier);
+
+                // Security check: ensure loaded basket belongs to current user
+                if (!string.Equals(basket.UserName, userIdentifier, StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogWarning("User {UserId} got basket that doesn't belong to them", userIdentifier);
+                    // Create new basket for user
+                    basket = new ShoppingCartModel { UserName = userIdentifier, Items = new List<ShoppingCartItemModel>() };
+                }
+
+                // Check if item already exists in cart
+                var existingItem = basket.Items.FirstOrDefault(x => x.ProductId == productId && x.Color == Color);
+                if (existingItem != null)
+                {
+                    // Update quantity if item exists
+                    existingItem.Quantity += Quantity;
+                    logger.LogInformation("Updated existing item quantity in cart for user: {UserId}", userIdentifier);
+                }
+                else
+                {
+                    // Add new item to cart
+                    basket.Items.Add(new ShoppingCartItemModel
+                    {
+                        ProductId = productId,
+                        ProductName = productResponse.Product.Name,
                     Price = productResponse.Product.Price,
                     Quantity = Quantity,
                     Color = Color
