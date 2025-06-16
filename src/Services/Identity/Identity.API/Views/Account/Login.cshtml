@@ -1,4 +1,4 @@
-@model Identity.API.Controllers.LoginViewModel
+@model Identity.API.Controllers.AccountLoginViewModel
 @{
     ViewData["Title"] = "Login";
 }
@@ -22,7 +22,7 @@
 
 <form asp-action="Login" method="post">
     <input type="hidden" asp-for="@ViewData["ReturnUrl"]" name="returnUrl" />
-    
+
     <div class="mb-3">
         <label asp-for="Email" class="form-label">
             <i class="fas fa-envelope me-2"></i>Email Address

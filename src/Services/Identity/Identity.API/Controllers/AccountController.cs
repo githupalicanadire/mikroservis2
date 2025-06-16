@@ -40,9 +40,9 @@ public class AccountController : Controller
     public async Task<IActionResult> Login(string? returnUrl)
     {
         var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
-        
-        var vm = new LoginViewModel();
-        
+
+        var vm = new AccountLoginViewModel();
+
         if (context?.IdP != null && await SchemeSupportsSignOut(context.IdP))
         {
             vm.EnableLocalLogin = false;
@@ -55,7 +55,7 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl)
+    public async Task<IActionResult> Login(AccountLoginViewModel model, string? returnUrl)
     {
         var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
 
@@ -174,18 +174,8 @@ public class ExternalProvider
     public string AuthenticationScheme { get; set; } = default!;
 }
 
-public class LoginViewModel
+public class AccountLoginViewModel : LoginViewModel
 {
-    [Required]
-    [EmailAddress]
-    public string Email { get; set; } = default!;
-
-    [Required]
-    [DataType(DataType.Password)]
-    public string Password { get; set; } = default!;
-
-    public bool RememberMe { get; set; }
-
     public bool EnableLocalLogin { get; set; } = true;
     public IEnumerable<ExternalProvider> ExternalProviders { get; set; } = Enumerable.Empty<ExternalProvider>();
     public IEnumerable<ExternalProvider> VisibleExternalProviders => ExternalProviders.Where(x => !string.IsNullOrWhiteSpace(x.DisplayName));
