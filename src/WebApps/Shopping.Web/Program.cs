@@ -32,11 +32,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddOpenIdConnect("oidc", options =>
 {
-    // Use internal URL for server-to-server communication
-    var internalUrl = builder.Configuration["IdentityServer:InternalUrl"];
-    var externalUrl = builder.Configuration["IdentityServer:BaseUrl"];
-
-    options.Authority = !string.IsNullOrEmpty(internalUrl) ? internalUrl : externalUrl;
+    options.Authority = builder.Configuration["IdentityServer:BaseUrl"];
     options.ClientId = "shopping.web";
     options.ClientSecret = "secret";
     options.ResponseType = "code";
