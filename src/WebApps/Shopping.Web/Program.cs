@@ -32,7 +32,11 @@ builder.Services.AddAuthentication(options =>
 })
 .AddOpenIdConnect("oidc", options =>
 {
-    options.Authority = builder.Configuration["IdentityServer:BaseUrl"];
+    // Use internal URL for server-to-server communication
+    var internalUrl = builder.Configuration["IdentityServer:InternalUrl"];
+    var externalUrl = builder.Configuration["IdentityServer:BaseUrl"];
+
+    options.Authority = !string.IsNullOrEmpty(internalUrl) ? internalUrl : externalUrl;
     options.ClientId = "shopping.web";
     options.ClientSecret = "secret";
     options.ResponseType = "code";
@@ -119,7 +123,7 @@ app.Use(async (context, next) =>
     {
         // Store the original URL to redirect after login
         var returnUrl = context.Request.Path + context.Request.QueryString;
-        
+
         // Add a message to inform the user why they are being redirected
         string message;
         if (path?.StartsWith("/cart") == true)
@@ -138,7 +142,7 @@ app.Use(async (context, next) =>
         {
             message = "Please login to continue";
         }
-            
+
         context.Response.Redirect($"/Login?returnUrl={Uri.EscapeDataString(returnUrl)}&message={Uri.EscapeDataString(message)}");
         return;
     }
