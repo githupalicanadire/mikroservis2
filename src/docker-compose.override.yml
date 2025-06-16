@@ -142,6 +142,7 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ApiSettings__GatewayAddress=http://yarpapigateway:8080
       - IdentityServer__BaseUrl=http://localhost:6006
+      - IdentityServer__InternalUrl=http://identity.api:8080
     depends_on:
       - yarpapigateway
       - identity.api
