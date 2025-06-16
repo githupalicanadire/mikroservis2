@@ -299,8 +299,8 @@ function serveInfoPage(res) {
         <h1>🏪 EShop Microservices Development Server</h1>
 
         <div class="status success">
-            <strong>✅ Identity Server Düzeltildi!</strong><br>
-            Kimlik doğrulama sistemi yapılandırıldı ve çalışmaya hazır. Tam işlevsellik için Docker veya .NET SDK gerekli.
+            <strong>✅ Identity Server & Seed Data Hazır!</strong><br>
+            Kimlik doğrulama sistemi, seed data ve otomatik test akışı tamamen hazır. Demo kullanıcılar ve ürünler oluşturuldu.
         </div>
 
         <h2>📋 Project Information</h2>
@@ -393,9 +393,20 @@ dotnet run</pre>
         </ul>
 
         <div class="status info">
-            <strong>🔑 Demo Giriş Bilgileri:</strong><br>
-            Email: <code>admin@toyshop.com</code><br>
-            Şifre: <code>Admin123!</code>
+            <strong>🔑 Demo Kullanıcılar:</strong><br>
+            Admin: <code>admin@toyshop.com</code> / <code>Admin123!</code><br>
+            John: <code>john.doe@example.com</code> / <code>User123!</code><br>
+            Jane: <code>jane.smith@example.com</code> / <code>User123!</code><br>
+            Mike: <code>mike.wilson@example.com</code> / <code>User123!</code><br>
+            Sarah: <code>sarah.johnson@example.com</code> / <code>User123!</code>
+        </div>
+
+        <div class="status success">
+            <strong>🧪 Otomatik Test Akışı:</strong><br>
+            1. <a href="http://localhost:5000/TestFlow" target="_blank">Test Flow Sayfası</a> - Register → Login → Shopping → Logout<br>
+            2. <a href="http://localhost:5000/UserTest" target="_blank">User Test Sayfası</a> - Security validation (login gerekli)<br>
+            3. <a href="http://localhost:6006/api/seed/status" target="_blank">Seed Status API</a> - Identity Server durumu<br>
+            4. <a href="http://localhost:6006/api/seed/users" target="_blank">Demo Users API</a> - Kullanıcı listesi
         </div>
 
         <h2>📚 Documentation & Learning</h2>
