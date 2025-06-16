@@ -93,8 +93,30 @@ using (var scope = app.Services.CreateScope())
         // Wait for database to be ready with retry logic
         logger.LogInformation("Starting database initialization...");
 
-        // The retry policy in DbContext configuration should handle transient failures
-        // Just ensure database exists and apply schema
+        // First, try to create the database if it doesn't exist
+        try
+        {
+            // This will create the database if it doesn't exist
+            var connectionStringBuilder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(
+                context.Database.GetConnectionString());
+            var masterConnectionString = connectionStringBuilder.ToString().Replace(connectionStringBuilder.InitialCatalog, "master");
+
+            using var masterConnection = new Microsoft.Data.SqlClient.SqlConnection(masterConnectionString);
+            await masterConnection.OpenAsync();
+
+            var createDbCommand = new Microsoft.Data.SqlClient.SqlCommand(
+                $"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = '{connectionStringBuilder.InitialCatalog}') " +
+                $"CREATE DATABASE [{connectionStringBuilder.InitialCatalog}]", masterConnection);
+
+            await createDbCommand.ExecuteNonQueryAsync();
+            logger.LogInformation("Database existence verified/created");
+        }
+        catch (Exception dbCreateEx)
+        {
+            logger.LogWarning(dbCreateEx, "Could not create database manually, trying EnsureCreated");
+        }
+
+        // Now ensure the schema is created
         await context.Database.EnsureCreatedAsync();
         logger.LogInformation("Database schema ensured");
 
