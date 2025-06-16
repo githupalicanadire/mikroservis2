@@ -298,9 +298,9 @@ function serveInfoPage(res) {
     <div class="container">
         <h1>🏪 EShop Microservices Development Server</h1>
 
-        <div class="status error">
-            <strong>⚠️ Development Environment Issue</strong><br>
-            This is a .NET Core microservices project, but the current environment doesn't have .NET Core or Docker installed.
+        <div class="status success">
+            <strong>✅ Identity Server Düzeltildi!</strong><br>
+            Kimlik doğrulama sistemi yapılandırıldı ve çalışmaya hazır. Tam işlevsellik için Docker veya .NET SDK gerekli.
         </div>
 
         <h2>📋 Project Information</h2>
@@ -345,6 +345,11 @@ function serveInfoPage(res) {
                 <p>Order management</p>
                 <p class="port">Port: 6003</p>
             </div>
+            <div class="service-card">
+                <h3>🔐 Identity Server</h3>
+                <p>Authentication & Authorization (IdentityServer4)</p>
+                <p class="port">Port: 6006</p>
+            </div>
         </div>
 
         <h2>🛠️ Required Tools for Development</h2>
@@ -379,12 +384,19 @@ dotnet run</pre>
         <h2>🔗 Important URLs (when running with Docker)</h2>
         <ul>
             <li>🛍️ <strong>Shopping Web UI:</strong> <a href="http://localhost:6005" target="_blank">http://localhost:6005</a></li>
+            <li>🔐 <strong>Identity Server:</strong> <a href="http://localhost:6006" target="_blank">http://localhost:6006</a></li>
             <li>🚪 <strong>API Gateway:</strong> <a href="http://localhost:6004" target="_blank">http://localhost:6004</a></li>
             <li>🐰 <strong>RabbitMQ Dashboard:</strong> <a href="http://localhost:15672" target="_blank">http://localhost:15672</a> (guest/guest)</li>
             <li>🗄️ <strong>PostgreSQL:</strong> localhost:5432, localhost:5433</li>
             <li>🗄️ <strong>SQL Server:</strong> localhost:1433</li>
             <li>🔄 <strong>Redis:</strong> localhost:6379</li>
         </ul>
+
+        <div class="status info">
+            <strong>🔑 Demo Giriş Bilgileri:</strong><br>
+            Email: <code>admin@toyshop.com</code><br>
+            Şifre: <code>Admin123!</code>
+        </div>
 
         <h2>📚 Documentation & Learning</h2>
         <p>For detailed information about this microservices architecture:</p>
