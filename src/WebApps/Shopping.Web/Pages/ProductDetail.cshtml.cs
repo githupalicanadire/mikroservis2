@@ -60,17 +60,31 @@ namespace Shopping.Web.Pages
                     {
                         ProductId = productId,
                         ProductName = productResponse.Product.Name,
-                    Price = productResponse.Product.Price,
-                    Quantity = Quantity,
-                    Color = Color
-                });
-                logger.LogInformation("Added new item to cart for user: {UserName}", userName);
+                        Price = productResponse.Product.Price,
+                        Quantity = Quantity,
+                        Color = Color
+                    });
+                    logger.LogInformation("Added new item to cart for user: {UserId}", userIdentifier);
+                }
+
+                await basketService.StoreBasket(new StoreBasketRequest(basket));
+
+                TempData["SuccessMessage"] = $"'{productResponse.Product.Name}' has been added to your cart!";
+                return RedirectToPage("Cart");
             }
-
-            await basketService.StoreBasket(new StoreBasketRequest(basket));
-
-            TempData["SuccessMessage"] = $"'{productResponse.Product.Name}' has been added to your cart!";
-            return RedirectToPage("Cart");
+            catch (UnauthorizedAccessException)
+            {
+                // Store intended action and redirect to login
+                TempData["ReturnUrl"] = $"/ProductDetail?productId={productId}";
+                TempData["Message"] = "Please login to add items to your cart.";
+                return RedirectToPage("/Login");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error adding product {ProductId} to cart", productId);
+                TempData["ErrorMessage"] = "An error occurred while adding the item to your cart.";
+                return RedirectToPage();
+            }
         }
     }
 }
