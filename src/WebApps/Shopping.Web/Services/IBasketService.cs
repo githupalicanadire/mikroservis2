@@ -16,24 +16,33 @@ public interface IBasketService
     [Post("/basket-service/basket/checkout")]
     Task<CheckoutBasketResponse> CheckoutBasket(CheckoutBasketRequest request);
 
-    public async Task<ShoppingCartModel> LoadUserBasket(string? userName = null)
+    public async Task<ShoppingCartModel> LoadUserBasket(string userIdentifier)
     {
-        // Use provided userName or fallback to default
-        userName = userName ?? "anonymous";
+        if (string.IsNullOrEmpty(userIdentifier))
+        {
+            throw new ArgumentException("User identifier cannot be null or empty", nameof(userIdentifier));
+        }
 
         ShoppingCartModel basket;
 
         try
         {
-            var getBasketResponse = await GetBasket(userName);
+            var getBasketResponse = await GetBasket(userIdentifier);
             basket = getBasketResponse.Cart;
+
+            // Security validation: ensure returned basket belongs to the user
+            if (!string.Equals(basket.UserName, userIdentifier, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new UnauthorizedAccessException($"Basket does not belong to user {userIdentifier}");
+            }
         }
         catch (ApiException apiException) when (apiException.StatusCode == HttpStatusCode.NotFound)
         {
+            // Create new basket for user if not found
             basket = new ShoppingCartModel
             {
-                UserName = userName,
-                Items = []
+                UserName = userIdentifier,
+                Items = new List<ShoppingCartItemModel>()
             };
         }
 
