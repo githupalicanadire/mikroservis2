@@ -78,27 +78,25 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-// Initialize database
+// Initialize database and seed data
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    context.Database.EnsureCreated();
-
-    // Seed default user
-    if (!context.Users.Any())
+    try
     {
-        var defaultUser = new ApplicationUser
-        {
-            UserName = "admin@toyshop.com",
-            Email = "admin@toyshop.com",
-            FirstName = "Admin",
-            LastName = "User",
-            EmailConfirmed = true
-        };
+        // Ensure database is created
+        context.Database.EnsureCreated();
+        logger.LogInformation("Database ensured created");
 
-        await userManager.CreateAsync(defaultUser, "Admin123!");
+        // Seed demo data
+        await app.SeedDemoDataAsync();
+        logger.LogInformation("Demo data seeding completed");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred during database initialization");
     }
 }
 
