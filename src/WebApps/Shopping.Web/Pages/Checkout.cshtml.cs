@@ -31,21 +31,46 @@ namespace Shopping.Web.Pages
 
         public async Task<IActionResult> OnPostCheckOutAsync()
         {
-            // Check if user is authenticated
-            if (!userService.IsAuthenticated())
+            try
             {
-                return RedirectToPage("/Login");
+                var userIdentifier = userService.GetSecureUserIdentifier();
+                var userName = userService.GetCurrentUserName() ?? userService.GetCurrentUserEmail();
+
+                logger.LogInformation("Checkout initiated for user: {UserId}", userIdentifier);
+
+                Cart = await basketService.LoadUserBasket(userIdentifier);
+
+                // Security validation: ensure cart belongs to current user
+                if (!string.Equals(Cart.UserName, userIdentifier, StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogWarning("User {UserId} attempted to checkout cart that doesn't belong to them", userIdentifier);
+                    return RedirectToPage("/Login");
+                }
+
+                if (!Cart.Items.Any())
+                {
+                    logger.LogWarning("User {UserId} attempted to checkout with empty cart", userIdentifier);
+                    return RedirectToPage("/Cart");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return Page();
+                }
+
+                // Parse user identifier as customer GUID
+                if (!Guid.TryParse(userIdentifier, out var customerGuid))
+                {
+                    logger.LogError("Invalid user identifier format for checkout: {UserId}", userIdentifier);
+                    return RedirectToPage("/Login");
+                }
             }
-
-            var userName = userService.GetCurrentUserName() ?? userService.GetCurrentUserEmail();
-            var userId = userService.GetCurrentUserId();
-
-            if (string.IsNullOrEmpty(userName))
+            catch (Exception ex)
             {
-                return RedirectToPage("/Login");
+                logger.LogError(ex, "Error loading checkout page");
+                return RedirectToPage("/Cart");
             }
-
-            logger.LogInformation("Checkout button clicked for user: {UserName}", userName);
+        }
 
             Cart = await basketService.LoadUserBasket(userName);
 
