@@ -10,29 +10,45 @@ namespace Shopping.Web.Pages
 
         public async Task<IActionResult> OnGetAsync()
         {
-            // Check if user is authenticated
-            if (!userService.IsAuthenticated())
+            try
             {
-                return RedirectToPage("/Login");
-            }
+                var userIdentifier = userService.GetSecureUserIdentifier();
+                var userName = userService.GetCurrentUserName() ?? userService.GetCurrentUserEmail();
+                CurrentUserName = userName;
 
-            var userId = userService.GetCurrentUserId();
-            var userName = userService.GetCurrentUserName() ?? userService.GetCurrentUserEmail();
-            CurrentUserName = userName;
+                logger.LogInformation("Loading orders for user: {UserId}", userIdentifier);
 
-            if (string.IsNullOrEmpty(userId))
-            {
-                logger.LogWarning("Could not determine user ID for orders");
-                // Create a deterministic GUID from user name for demo purposes
-                if (!string.IsNullOrEmpty(userName))
+                // Parse userIdentifier as GUID for the ordering service
+                if (Guid.TryParse(userIdentifier, out var customerGuid))
                 {
-                    userId = GenerateGuidFromString(userName);
+                    var response = await orderingService.GetOrdersByCustomer(customerGuid);
+
+                    if (response?.Orders != null)
+                    {
+                        // Additional security check: verify all returned orders belong to current user
+                        var userOrders = response.Orders.Where(order =>
+                            order.CustomerId == customerGuid).ToList();
+
+                        if (userOrders.Count != response.Orders.Count())
+                        {
+                            logger.LogWarning("Order service returned orders that don't belong to user {UserId}", userIdentifier);
+                        }
+
+                        OrderList = userOrders;
+                        logger.LogInformation("Successfully loaded {OrderCount} orders for user {UserId}",
+                            OrderList.Count(), userIdentifier);
+                    }
+                    else
+                    {
+                        logger.LogInformation("No orders found for user {UserId}", userIdentifier);
+                        OrderList = new List<OrderModel>();
+                    }
                 }
                 else
                 {
+                    logger.LogError("Invalid user identifier format: {UserId}", userIdentifier);
                     return RedirectToPage("/Login");
                 }
-            }
 
             logger.LogInformation("Loading order list for user: {UserName} (ID: {UserId})", userName, userId);
 
@@ -53,12 +69,23 @@ namespace Shopping.Web.Pages
             return Page();
         }
 
-        private string GenerateGuidFromString(string input)
-        {
-            // Create a deterministic GUID from string for demo purposes
-            using var md5 = System.Security.Cryptography.MD5.Create();
-            var hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
-            return new Guid(hash).ToString();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                logger.LogWarning("Unauthorized access attempt to order list");
+                return RedirectToPage("/Login");
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogError(ex, "Could not determine user identity for orders");
+                return RedirectToPage("/Login");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading orders");
+                OrderList = new List<OrderModel>();
+            }
+
+            return Page();
         }
-    }
 }
