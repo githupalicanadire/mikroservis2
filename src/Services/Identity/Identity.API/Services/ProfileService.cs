@@ -1,6 +1,6 @@
 using Identity.API.Models;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
+using Duende.IdentityServer.Models;
+using Duende.IdentityServer.Services;
 
 namespace Identity.API.Services;
 
