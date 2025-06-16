@@ -91,51 +91,12 @@ using (var scope = app.Services.CreateScope())
     try
     {
         // Wait for database to be ready with retry logic
-        int retryCount = 0;
-        int maxRetries = 30; // 30 * 2 seconds = 60 seconds max wait
+        logger.LogInformation("Starting database initialization...");
 
-        while (retryCount < maxRetries)
-        {
-            try
-            {
-                logger.LogInformation("Attempting to connect to database (attempt {Attempt}/{MaxRetries})", retryCount + 1, maxRetries);
-
-                // Test connection
-                await context.Database.CanConnectAsync();
-                logger.LogInformation("Database connection successful");
-
-                // Apply migrations if any exist, otherwise ensure created
-                var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-                if (pendingMigrations.Any())
-                {
-                    logger.LogInformation("Applying {MigrationCount} pending migrations", pendingMigrations.Count());
-                    await context.Database.MigrateAsync();
-                    logger.LogInformation("Database migrations applied successfully");
-                }
-                else
-                {
-                    // Ensure database is created if no migrations
-                    await context.Database.EnsureCreatedAsync();
-                    logger.LogInformation("Database ensured created");
-                }
-
-                break; // Success, exit retry loop
-            }
-            catch (Exception dbEx)
-            {
-                retryCount++;
-                logger.LogWarning(dbEx, "Database connection attempt {Attempt} failed: {Message}", retryCount, dbEx.Message);
-
-                if (retryCount >= maxRetries)
-                {
-                    logger.LogError("Failed to connect to database after {MaxRetries} attempts", maxRetries);
-                    throw;
-                }
-
-                // Wait 2 seconds before retry
-                await Task.Delay(TimeSpan.FromSeconds(2));
-            }
-        }
+        // The retry policy in DbContext configuration should handle transient failures
+        // Just ensure database exists and apply schema
+        await context.Database.EnsureCreatedAsync();
+        logger.LogInformation("Database schema ensured");
 
         // Seed demo data
         await app.SeedDemoDataAsync();
