@@ -329,7 +329,7 @@ public class TestFlowModel : PageModel
                $"   Security Logging: ✓ Active\n" +
                $"   \n" +
                $"   Manual Test: Visit /UserTest for detailed validation\n" +
-               $"   Multi-User Test: Login with different demo accounts";
+               $"   Multi-User Test: Login with different demo accounts");
     }
 
     private Task<string> TestLoginFlow()
@@ -344,7 +344,7 @@ public class TestFlowModel : PageModel
                $"   1. Go to /Login\n" +
                $"   2. Use demo credentials (admin@toyshop.com / Admin123!)\n" +
                $"   3. Verify redirect to Identity Server\n" +
-               $"   4. Confirm successful login and token generation";
+               $"   4. Confirm successful login and token generation");
     }
 
     private Task<string> TestLogoutFlow()
@@ -359,6 +359,6 @@ public class TestFlowModel : PageModel
                $"   1. Login with any demo account\n" +
                $"   2. Click logout button in navigation\n" +
                $"   3. Verify redirect to home page\n" +
-               $"   4. Confirm protected pages are inaccessible";
+               $"   4. Confirm protected pages are inaccessible");
     }
 }
