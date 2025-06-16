@@ -71,7 +71,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="fw-bold text-primary">@order.OrderItems.Sum(x => x.Price * x.Quantity) TL</span>
+                                                <span class="fw-bold text-primary">@order.OrderItems.Sum(x => x.Price * x.Quantity).ToString("C") </span>
                                             </td>
                                             <td>
                                                 @{

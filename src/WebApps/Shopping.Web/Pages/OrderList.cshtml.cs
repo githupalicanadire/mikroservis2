@@ -11,6 +11,7 @@ namespace Shopping.Web.Pages
         : PageModel
     {
         public IEnumerable<OrderModel> OrderList { get; set; } = new List<OrderModel>();
+        public IEnumerable<OrderModel> Orders => OrderList; // Alias for Razor compatibility
         public string CurrentUserName { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync()

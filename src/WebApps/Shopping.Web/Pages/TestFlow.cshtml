@@ -22,22 +22,22 @@
                             <form method="post" asp-page-handler="StartTest">
                                 <div class="mb-3">
                                     <label class="form-label">Test User Email</label>
-                                    <input type="email" class="form-control" name="testEmail" 
+                                    <input type="email" class="form-control" name="testEmail"
                                            value="autotest@example.com" required />
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Test User Password</label>
-                                    <input type="password" class="form-control" name="testPassword" 
+                                    <input type="password" class="form-control" name="testPassword"
                                            value="Test123!" required />
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">First Name</label>
-                                    <input type="text" class="form-control" name="firstName" 
+                                    <input type="text" class="form-control" name="firstName"
                                            value="Auto" required />
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" name="lastName" 
+                                    <input type="text" class="form-control" name="lastName"
                                            value="Test" required />
                                 </div>
                                 <button type="submit" class="btn btn-primary">
@@ -87,7 +87,7 @@
                             <div class="progress-section">
                                 <h5><i class="fas fa-spinner fa-spin text-warning me-2"></i>Test Running...</h5>
                                 <div class="progress mb-3">
-                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
                                          style="width: @(Model.TestProgress)%"></div>
                                 </div>
                                 <p class="current-step">Current Step: @Model.CurrentStep</p>
@@ -274,7 +274,7 @@
         margin: 0;
     }
 
-    @keyframes pulse {
+    @@keyframes pulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
     }

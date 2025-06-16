@@ -81,7 +81,7 @@ namespace Shopping.Web.Pages
         {
             try
             {
-                var userIdentifier = userService.GetSecureUserIdentifier();
+                var userIdentifier = this.userService.GetSecureUserIdentifier();
 
                 logger.LogInformation("Add to cart from product list for user: {UserId}, product: {ProductId}", userIdentifier, productId);
 

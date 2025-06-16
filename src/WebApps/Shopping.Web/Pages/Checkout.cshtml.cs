@@ -91,7 +91,7 @@ namespace Shopping.Web.Pages
                 Order.CustomerId = customerGuid;
                 Order.TotalPrice = Cart.TotalPrice;
 
-                var checkoutBasketRequest = new CheckoutBasketRequest
+                var basketCheckoutDto = new BasketCheckoutModel
                 {
                     UserName = userIdentifier,
                     CustomerId = customerGuid,
@@ -109,6 +109,8 @@ namespace Shopping.Web.Pages
                     CVV = Order.CVV,
                     PaymentMethod = Order.PaymentMethod
                 };
+
+                var checkoutBasketRequest = new CheckoutBasketRequest(basketCheckoutDto);
 
                 await basketService.CheckoutBasket(checkoutBasketRequest);
                 logger.LogInformation("Checkout completed successfully for user: {UserId}", userIdentifier);

@@ -115,9 +115,10 @@ public class UserTestModel : PageModel
             }
 
             // Create test order through checkout
-            var checkoutRequest = new Shopping.Web.Models.Basket.CheckoutBasketRequest
+            var basketCheckoutDto = new Shopping.Web.Models.Basket.BasketCheckoutModel
             {
                 UserName = userIdentifier,
+                CustomerId = Guid.Parse(userIdentifier),
                 TotalPrice = basket.TotalPrice,
                 FirstName = "Test",
                 LastName = "User",
@@ -132,6 +133,8 @@ public class UserTestModel : PageModel
                 CVV = "123",
                 PaymentMethod = 1
             };
+
+            var checkoutRequest = new Shopping.Web.Models.Basket.CheckoutBasketRequest(basketCheckoutDto);
 
             await _basketService.CheckoutBasket(checkoutRequest);
 
