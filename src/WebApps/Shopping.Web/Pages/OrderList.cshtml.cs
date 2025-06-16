@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Shopping.Web.Models.Ordering;
@@ -6,7 +5,7 @@ using Shopping.Web.Services;
 
 namespace Shopping.Web.Pages
 {
-    [Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class OrderListModel
         (IOrderingService orderingService, IUserService userService, ILogger<OrderListModel> logger)
         : PageModel
@@ -28,20 +27,20 @@ namespace Shopping.Web.Pages
                 if (Guid.TryParse(userIdentifier, out var customerGuid))
                 {
                     var response = await orderingService.GetOrdersByCustomer(customerGuid);
-                    
+
                     if (response?.Orders != null)
                     {
                         // Additional security check: verify all returned orders belong to current user
-                        var userOrders = response.Orders.Where(order => 
+                        var userOrders = response.Orders.Where(order =>
                             order.CustomerId == customerGuid).ToList();
-                        
+
                         if (userOrders.Count != response.Orders.Count())
                         {
                             logger.LogWarning("Order service returned orders that don't belong to user {UserId}", userIdentifier);
                         }
-                        
+
                         OrderList = userOrders;
-                        logger.LogInformation("Successfully loaded {OrderCount} orders for user {UserId}", 
+                        logger.LogInformation("Successfully loaded {OrderCount} orders for user {UserId}",
                             OrderList.Count(), userIdentifier);
                     }
                     else

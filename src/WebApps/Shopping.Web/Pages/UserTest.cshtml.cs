@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Shopping.Web.Models.Catalog;
@@ -7,7 +6,7 @@ using System.Text;
 
 namespace Shopping.Web.Pages;
 
-[Authorize]
+[Microsoft.AspNetCore.Authorization.Authorize]
 public class UserTestModel : PageModel
 {
     private readonly IUserService _userService;
@@ -17,7 +16,7 @@ public class UserTestModel : PageModel
     private readonly ILogger<UserTestModel> _logger;
 
     public UserTestModel(
-        IUserService userService, 
+        IUserService userService,
         IBasketService basketService,
         IOrderingService orderingService,
         ICatalogService catalogService,
@@ -64,14 +63,14 @@ public class UserTestModel : PageModel
         try
         {
             var userIdentifier = _userService.GetSecureUserIdentifier();
-            
+
             // Get first available product
             var productsResponse = await _catalogService.GetProducts(1, 1);
             if (productsResponse?.Products?.Any() == true)
             {
                 var product = productsResponse.Products.First();
                 var basket = await _basketService.LoadUserBasket(userIdentifier);
-                
+
                 basket.Items.Add(new Shopping.Web.Models.Basket.ShoppingCartItemModel
                 {
                     ProductId = product.Id,
@@ -82,7 +81,7 @@ public class UserTestModel : PageModel
                 });
 
                 await _basketService.StoreBasket(new Shopping.Web.Models.Basket.StoreBasketRequest(basket));
-                
+
                 TestResults = $"✅ Test product added to cart at {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n" +
                              $"User ID: {userIdentifier}\n" +
                              $"Product: {product.Name}\n" +
@@ -107,7 +106,7 @@ public class UserTestModel : PageModel
         {
             var userIdentifier = _userService.GetSecureUserIdentifier();
             var basket = await _basketService.LoadUserBasket(userIdentifier);
-            
+
             if (!basket.Items.Any())
             {
                 TestResults = "❌ Cannot create order: Cart is empty. Add test product first.";
@@ -135,7 +134,7 @@ public class UserTestModel : PageModel
             };
 
             await _basketService.CheckoutBasket(checkoutRequest);
-            
+
             TestResults = $"✅ Test order created at {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n" +
                          $"User ID: {userIdentifier}\n" +
                          $"Items: {basket.Items.Count}\n" +
@@ -173,7 +172,7 @@ public class UserTestModel : PageModel
                 var userId = _userService.GetCurrentUserId();
                 var email = _userService.GetCurrentUserEmail();
                 var name = _userService.GetCurrentUserName();
-                
+
                 if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(email))
                 {
                     results.AppendLine("✅ User identity retrieval successful");
@@ -197,7 +196,7 @@ public class UserTestModel : PageModel
             try
             {
                 var basket = await _basketService.LoadUserBasket(userIdentifier);
-                
+
                 if (string.Equals(basket.UserName, userIdentifier, StringComparison.OrdinalIgnoreCase))
                 {
                     results.AppendLine("✅ Cart belongs to current user");
@@ -228,11 +227,11 @@ public class UserTestModel : PageModel
                 if (Guid.TryParse(userIdentifier, out var customerGuid))
                 {
                     var ordersResponse = await _orderingService.GetOrdersByCustomer(customerGuid);
-                    
+
                     if (ordersResponse?.Orders != null)
                     {
                         var userOrders = ordersResponse.Orders.Where(o => o.CustomerId == customerGuid).ToList();
-                        
+
                         if (userOrders.Count == ordersResponse.Orders.Count())
                         {
                             results.AppendLine("✅ All orders belong to current user");

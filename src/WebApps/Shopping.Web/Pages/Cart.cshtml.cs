@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Shopping.Web.Models.Basket;
@@ -6,7 +5,7 @@ using Shopping.Web.Services;
 
 namespace Shopping.Web.Pages
 {
-    [Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class CartModel(IBasketService basketService, IUserService userService, ILogger<CartModel> logger)
         : PageModel
     {
@@ -18,7 +17,7 @@ namespace Shopping.Web.Pages
             {
                 // Use secure user identifier instead of username/email
                 var userIdentifier = userService.GetSecureUserIdentifier();
-                
+
                 Cart = await basketService.LoadUserBasket(userIdentifier);
                 logger.LogInformation("Cart loaded for user: {UserId}", userIdentifier);
 
@@ -46,21 +45,21 @@ namespace Shopping.Web.Pages
             try
             {
                 var userIdentifier = userService.GetSecureUserIdentifier();
-                
+
                 logger.LogInformation("Remove from cart for user: {UserId}, product: {ProductId}", userIdentifier, productId);
 
                 Cart = await basketService.LoadUserBasket(userIdentifier);
-                
+
                 // Verify cart belongs to current user
                 if (!string.Equals(Cart.UserName, userIdentifier, StringComparison.OrdinalIgnoreCase))
                 {
                     logger.LogWarning("User {UserId} attempted to modify cart that doesn't belong to them", userIdentifier);
                     return RedirectToPage("/Login");
                 }
-                
+
                 Cart.Items.RemoveAll(x => x.ProductId == productId);
                 await basketService.StoreBasket(new StoreBasketRequest(Cart));
-                
+
                 logger.LogInformation("Item removed from cart for user: {UserId}", userIdentifier);
 
                 return RedirectToPage();

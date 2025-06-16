@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Shopping.Web.Models.Basket;
@@ -6,7 +5,7 @@ using Shopping.Web.Services;
 
 namespace Shopping.Web.Pages
 {
-    [Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class CheckoutModel
         (IBasketService basketService, IUserService userService, ILogger<CheckoutModel> logger)
         : PageModel
@@ -21,23 +20,23 @@ namespace Shopping.Web.Pages
             try
             {
                 var userIdentifier = userService.GetSecureUserIdentifier();
-                
+
                 Cart = await basketService.LoadUserBasket(userIdentifier);
-                
+
                 // Verify cart belongs to current user
                 if (!string.Equals(Cart.UserName, userIdentifier, StringComparison.OrdinalIgnoreCase))
                 {
                     logger.LogWarning("User {UserId} attempted to checkout cart that doesn't belong to them", userIdentifier);
                     return RedirectToPage("/Login");
                 }
-                
+
                 // Ensure cart has items
                 if (!Cart.Items.Any())
                 {
                     logger.LogInformation("User {UserId} attempted to checkout with empty cart", userIdentifier);
                     return RedirectToPage("/Cart");
                 }
-                
+
                 return Page();
             }
             catch (UnauthorizedAccessException)
@@ -125,7 +124,7 @@ namespace Shopping.Web.Pages
             {
                 logger.LogError(ex, "Error during checkout for user");
                 ModelState.AddModelError("", "An error occurred during checkout. Please try again.");
-                
+
                 // Reload cart for display
                 try
                 {
@@ -136,7 +135,7 @@ namespace Shopping.Web.Pages
                 {
                     Cart = new ShoppingCartModel();
                 }
-                
+
                 return Page();
             }
         }
