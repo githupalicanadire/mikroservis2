@@ -1,0 +1,91 @@
+@page
+@model Shopping.Web.Pages.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="auth-card glass-card">
+                <div class="auth-header text-center mb-4">
+                    <i class="fas fa-user-plus auth-icon"></i>
+                    <h2 class="auth-title">Create Account</h2>
+                    <p class="auth-subtitle">Join our community today</p>
+                </div>
+
+                <form method="post" class="auth-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="RegisterData.FirstName" class="form-label">
+                                    <i class="fas fa-user me-2"></i>First Name
+                                </label>
+                                <input asp-for="RegisterData.FirstName" class="form-control" placeholder="First name" />
+                                <span asp-validation-for="RegisterData.FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="RegisterData.LastName" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Last Name
+                                </label>
+                                <input asp-for="RegisterData.LastName" class="form-control" placeholder="Last name" />
+                                <span asp-validation-for="RegisterData.LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="RegisterData.Email" class="form-label">
+                            <i class="fas fa-envelope me-2"></i>Email Address
+                        </label>
+                        <input asp-for="RegisterData.Email" class="form-control" placeholder="Enter your email" />
+                        <span asp-validation-for="RegisterData.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="RegisterData.Password" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Password
+                        </label>
+                        <input asp-for="RegisterData.Password" class="form-control" placeholder="Create a password" />
+                        <span asp-validation-for="RegisterData.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="RegisterData.ConfirmPassword" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Confirm Password
+                        </label>
+                        <input asp-for="RegisterData.ConfirmPassword" class="form-control" placeholder="Confirm your password" />
+                        <span asp-validation-for="RegisterData.ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 auth-btn">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+                </form>
+
+                <div class="auth-divider">
+                    <span>OR</span>
+                </div>
+
+                <div class="text-center">
+                    <p class="mb-3">Already have an account?</p>
+                    <a asp-page="Login" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </a>
+                </div>
+
+                <div class="auth-footer text-center mt-4">
+                    <small class="text-muted">
+                        By creating an account, you agree to our terms and privacy policy.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

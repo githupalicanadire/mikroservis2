@@ -1,0 +1,34 @@
+{
+  "name": "eshop-microservices",
+  "version": "1.0.0",
+  "description": "E-commerce microservices application built with .NET Core",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "echo 'This is a .NET project. Please use: dotnet build src/eshop-microservices.sln'",
+    "test": "echo 'This is a .NET project. Please use: dotnet test src/eshop-microservices.sln'",
+    "setup": "echo 'EShop Microservices - Development environment configured for information server'",
+    "info": "echo 'This is a .NET Core microservices project. Use Docker for full functionality:'",
+    "docker:up": "cd src && docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d",
+    "docker:down": "cd src && docker-compose -f docker-compose.yml -f docker-compose.override.yml down",
+    "dotnet:restore": "cd src && dotnet restore",
+    "dotnet:build": "cd src && dotnet build",
+    "dotnet:run:web": "cd src/WebApps/Shopping.Web && dotnet run"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aspnetrun/run-aspnetcore-microservices"
+  },
+  "keywords": [
+    "microservices",
+    "dotnet",
+    "csharp",
+    "aspnetcore",
+    "docker",
+    "ecommerce"
+  ],
+  "author": "Mehmet Ozkaya",
+  "license": "MIT"
+}

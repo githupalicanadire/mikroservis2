@@ -1,0 +1,143 @@
+@page
+@model Shopping.Web.Pages.OrderListModel
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-gradient-primary rounded p-3 mb-0 shadow-sm">
+            <li class="breadcrumb-item"><a asp-page="Index" class="text-white text-decoration-none"><i class="fas fa-home me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active text-white" aria-current="page"><i class="fas fa-list me-1"></i>Orders</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Your Orders</h5>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div class="d-flex align-items-center">
+                                <small class="opacity-75 me-3">
+                                    <i class="fas fa-user me-1"></i>
+                                    @(User.FindFirst("name")?.Value ?? User.FindFirst("email")?.Value ?? User.Identity.Name)
+                                </small>
+                                <span class="badge bg-light text-dark">
+                                    @Model.Orders.Count() Orders
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Orders.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-shopping-bag fa-4x mb-3" style="color: var(--primary-color)"></i>
+                            <h4>No Orders Found</h4>
+                            <p class="text-muted">You haven't placed any orders yet.</p>
+                            <a asp-page="ProductList" class="btn btn-primary">
+                                <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Order ID</th>
+                                        <th scope="col">Customer</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col" class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.Orders)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="fw-bold">#@order.Id.ToString().Substring(0, 8)</span>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">@order.ShippingAddress.FirstName @order.ShippingAddress.LastName</div>
+                                                    <small class="text-muted">@order.ShippingAddress.EmailAddress</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold text-primary">@order.OrderItems.Sum(x => x.Price * x.Quantity) TL</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = order.Status.ToString().ToLower() switch
+                                                    {
+                                                        "draft" => "bg-secondary",
+                                                        "pending" => "bg-warning",
+                                                        "completed" => "bg-success",
+                                                        "cancelled" => "bg-danger",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@order.Status</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <a asp-page="OrderDetail" asp-route-orderId="@order.Id" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye me-1"></i>View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .breadcrumb {
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255,255,255,0.8);
+    }
+
+    .table {
+        color: var(--dark-text);
+    }
+
+    .table > :not(caption) > * > * {
+        background-color: var(--dark-card-bg);
+        border-bottom-color: var(--dark-border);
+    }
+
+    .table > thead {
+        border-bottom: 2px solid var(--dark-border);
+    }
+
+    .badge {
+        padding: 0.5em 1em;
+        font-weight: 500;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    }
+</style>
+
+<script>
+    function viewOrderDetails(orderId) {
+        console.log('Viewing order details for:', orderId);
+        // TODO: Implement order details view
+    }
+</script>

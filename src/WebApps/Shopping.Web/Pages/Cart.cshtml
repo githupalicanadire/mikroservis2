@@ -1,0 +1,174 @@
+@page
+@model Shopping.Web.Pages.CartModel
+@{
+    ViewData["Title"] = "Shopping Cart";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-gradient-primary rounded p-3 mb-0 shadow-sm">
+            <li class="breadcrumb-item"><a asp-page="Index" class="text-white text-decoration-none"><i class="fas fa-home me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active text-white" aria-current="page"><i class="fas fa-shopping-cart me-1"></i>Shopping Cart</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Your Cart</h5>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <small class="opacity-75">
+                        <i class="fas fa-user me-1"></i>
+                        @(User.FindFirst("name")?.Value ?? User.FindFirst("email")?.Value ?? User.Identity.Name)
+                    </small>
+                }
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!Model.Cart.Items.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-shopping-cart fa-4x mb-3" style="color: var(--primary-color)"></i>
+                    <h4>Your cart is empty</h4>
+                    <p class="text-muted">Add some products to your cart and come back here to complete your purchase.</p>
+                    <a asp-page="ProductList" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col">Product</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-center">Quantity</th>
+                                <th scope="col" class="text-end">Price</th>
+                                <th scope="col" style="width: 50px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cartItem in Model.Cart.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <h6 class="mb-0">@cartItem.ProductName</h6>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-gradient-success">In Stock</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="input-group input-group-sm" style="width: 100px;">
+                                            <button class="btn btn-outline-primary" type="button">-</button>
+                                            <input type="text" class="form-control text-center" value="@cartItem.Quantity">
+                                            <button class="btn btn-outline-primary" type="button">+</button>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold">@(cartItem.Price * cartItem.Quantity) TL</span>
+                                    </td>
+                                    <td>
+                                        <form asp-page-handler="removetocart" method="post">
+                                            <button class="btn btn-sm btn-danger" title="Remove item">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            <input type="hidden" asp-for="@cartItem.ProductId" name="productId" />
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end">
+                                    <strong>Total:</strong>
+                                </td>
+                                <td class="text-end">
+                                    <strong class="h5 mb-0 text-primary">@Model.Cart.TotalPrice TL</strong>
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <a asp-page="ProductList" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                    </a>
+                    <a asp-page="Checkout" class="btn btn-success">
+                        Proceed to Checkout<i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .breadcrumb {
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: rgba(255,255,255,0.8);
+    }
+
+    .table {
+        color: var(--dark-text);
+    }
+
+    .table > :not(caption) > * > * {
+        background-color: var(--dark-card-bg);
+        border-bottom-color: var(--dark-border);
+    }
+
+    .table > thead {
+        border-bottom: 2px solid var(--dark-border);
+    }
+
+    .input-group-sm > .form-control,
+    .input-group-sm > .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.2rem;
+    }
+
+    .input-group .form-control {
+        background-color: var(--dark-card-bg);
+        border-color: var(--dark-border);
+        color: var(--dark-text);
+    }
+
+    .input-group .btn-outline-primary {
+        color: var(--primary-color);
+        border-color: var(--dark-border);
+    }
+
+    .input-group .btn-outline-primary:hover {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    }
+
+    .bg-gradient-success {
+        background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+    }
+
+    .btn-success {
+        background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+        border: none;
+    }
+
+    .btn-success:hover {
+        background: linear-gradient(45deg, var(--primary-dark), var(--primary-color));
+        transform: translateY(-2px);
+    }
+</style>

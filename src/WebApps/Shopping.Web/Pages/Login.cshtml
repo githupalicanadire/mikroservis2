@@ -1,0 +1,69 @@
+@page
+@model Shopping.Web.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="auth-card glass-card">
+                <div class="auth-header text-center mb-4">
+                    <i class="fas fa-user-lock auth-icon"></i>
+                    <h2 class="auth-title">Welcome Back</h2>
+                    <p class="auth-subtitle">Sign in to your account</p>
+                </div>
+
+                <form method="post" class="auth-form">
+                    <div class="form-group mb-3">
+                        <label asp-for="LoginData.Email" class="form-label">
+                            <i class="fas fa-envelope me-2"></i>Email
+                        </label>
+                        <input asp-for="LoginData.Email" class="form-control" placeholder="Enter your email" />
+                        <span asp-validation-for="LoginData.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="LoginData.Password" class="form-label">
+                            <i class="fas fa-lock me-2"></i>Password
+                        </label>
+                        <input asp-for="LoginData.Password" class="form-control" placeholder="Enter your password" />
+                        <span asp-validation-for="LoginData.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input asp-for="LoginData.RememberMe" class="form-check-input" type="checkbox" />
+                        <label asp-for="LoginData.RememberMe" class="form-check-label">
+                            Remember me
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 auth-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </form>
+
+                <div class="auth-divider">
+                    <span>OR</span>
+                </div>
+
+                <div class="text-center">
+                    <p class="mb-3">Don't have an account?</p>
+                    <a asp-page="Register" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                </div>
+
+                <div class="auth-footer text-center mt-4">
+                    <small class="text-muted">
+                        By signing in, you agree to our terms and privacy policy.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

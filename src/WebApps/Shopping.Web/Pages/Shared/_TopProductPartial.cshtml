@@ -1,0 +1,39 @@
+﻿@model Models.Catalog.ProductModel
+
+<div class="top-product-card card shadow-lg border-0 mb-4">
+    <div class="card-header bg-success text-white text-uppercase d-flex align-items-center" style="border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;">
+        <i class="fa fa-heart me-2"></i> Top Product
+    </div>
+    <a asp-page="ProductDetail" asp-route-productId="@Model.Id">
+        <img class="img-fluid rounded-top" src="@Model.ImageFile" alt="@Model.Name" style="object-fit:cover; height:180px; width:100%;" />
+    </a>
+    <div class="card-body text-center">
+        <h5 class="card-title mb-2">
+            <a asp-page="ProductDetail" asp-route-productId="@Model.Id" class="text-decoration-none text-primary fw-bold" title="View Product">@Model.Name</a>
+        </h5>
+        <p class="card-text text-muted small mb-3">@Model.Description</p>
+        <div class="d-flex justify-content-center align-items-center mb-2">
+            <span class="badge bg-danger fs-6 me-2">@Model.Price $</span>
+            <a asp-page="ProductDetail" asp-route-productId="@Model.Id" class="btn btn-success btn-sm px-3">
+                <i class="fa fa-eye me-1"></i> View
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .top-product-card {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .top-product-card:hover {
+        box-shadow: 0 8px 32px rgba(76,175,80,0.25), 0 1.5px 6px rgba(0,0,0,0.08);
+        transform: translateY(-4px) scale(1.02);
+    }
+    .top-product-card .card-header {
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+</style>

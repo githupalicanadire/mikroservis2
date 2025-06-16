@@ -1,0 +1,285 @@
+@page
+@model Shopping.Web.Pages.DebugModel
+@{
+    ViewData["Title"] = "JWT Debug";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="debug-card glass-card">
+                <div class="debug-header text-center mb-4">
+                    <i class="fas fa-code debug-icon"></i>
+                    <h2 class="debug-title">JWT Token Debug</h2>
+                    <p class="debug-subtitle">Identity Server & JWT Token Information</p>
+                </div>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="row">
+                        <!-- User Information -->
+                        <div class="col-md-6 mb-4">
+                            <div class="info-section">
+                                <h5><i class="fas fa-user text-primary me-2"></i>User Information</h5>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <strong>Name:</strong>
+                                        <span>@(User.FindFirst("name")?.Value ?? "N/A")</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Email:</strong>
+                                        <span>@(User.FindFirst("email")?.Value ?? "N/A")</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Subject (ID):</strong>
+                                        <span>@(User.FindFirst("sub")?.Value ?? "N/A")</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Authentication Type:</strong>
+                                        <span>@User.Identity.AuthenticationType</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Token Information -->
+                        <div class="col-md-6 mb-4">
+                            <div class="info-section">
+                                <h5><i class="fas fa-key text-success me-2"></i>Token Information</h5>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <strong>Access Token:</strong>
+                                        <div class="token-preview">
+                                            @if (!string.IsNullOrEmpty(Model.AccessToken))
+                                            {
+                                                <code class="token-text">@Model.AccessToken.Substring(0, Math.Min(50, Model.AccessToken.Length))...</code>
+                                                <button class="btn btn-sm btn-outline-primary ms-2" onclick="copyToClipboard('@Model.AccessToken')">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">No access token available</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Token Type:</strong>
+                                        <span>@(Model.TokenType ?? "N/A")</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Refresh Token:</strong>
+                                        <span>@(!string.IsNullOrEmpty(Model.RefreshToken) ? "Available" : "N/A")</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Expires At:</strong>
+                                        <span>@(Model.ExpiresAt ?? "N/A")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Claims Information -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="info-section">
+                                <h5><i class="fas fa-list text-warning me-2"></i>User Claims</h5>
+                                <div class="claims-grid">
+                                    @foreach (var claim in User.Claims)
+                                    {
+                                        <div class="claim-item">
+                                            <strong>@claim.Type:</strong>
+                                            <span>@claim.Value</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test API Buttons -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="info-section">
+                                <h5><i class="fas fa-flask text-info me-2"></i>Test API Endpoints</h5>
+                                <div class="api-test-buttons">
+                                    <button class="btn btn-primary me-2" onclick="testAPI('/catalog-service/products')">
+                                        <i class="fas fa-box me-1"></i>Test Catalog API
+                                    </button>
+                                    <button class="btn btn-success me-2" onclick="testAPI('/basket-service/basket/test')">
+                                        <i class="fas fa-shopping-cart me-1"></i>Test Basket API
+                                    </button>
+                                    <button class="btn btn-warning" onclick="testAPI('/ordering-service/orders')">
+                                        <i class="fas fa-list me-1"></i>Test Ordering API
+                                    </button>
+                                </div>
+                                <div id="apiResults" class="mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-lock fa-4x text-muted mb-3"></i>
+                        <h4>Authentication Required</h4>
+                        <p class="text-muted">Please login to see JWT token information.</p>
+                        <a asp-page="/Login" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            alert('Token copied to clipboard!');
+        });
+    }
+
+    async function testAPI(endpoint) {
+        const resultDiv = document.getElementById('apiResults');
+        resultDiv.innerHTML = '<div class="alert alert-info">Testing API endpoint...</div>';
+        
+        try {
+            const response = await fetch(`${window.location.protocol}//${window.location.host}${endpoint}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer @Model.AccessToken',
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.text();
+            const statusClass = response.ok ? 'alert-success' : 'alert-danger';
+            
+            resultDiv.innerHTML = `
+                <div class="alert ${statusClass}">
+                    <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+                    <strong>Response:</strong> <pre>${result}</pre>
+                </div>
+            `;
+        } catch (error) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> ${error.message}
+                </div>
+            `;
+        }
+    }
+</script>
+
+<style>
+    .debug-card {
+        padding: 3rem;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .debug-icon {
+        font-size: 3rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+
+    .debug-title {
+        color: var(--dark-text);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .debug-subtitle {
+        color: var(--dark-text-secondary);
+        margin: 0;
+    }
+
+    .info-section {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .info-section h5 {
+        color: var(--dark-text);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .info-grid, .claims-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .info-item, .claim-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .info-item strong, .claim-item strong {
+        color: var(--dark-text);
+        min-width: 120px;
+    }
+
+    .info-item span, .claim-item span {
+        color: var(--dark-text-secondary);
+        text-align: right;
+        word-break: break-all;
+        max-width: 250px;
+    }
+
+    .token-preview {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .token-text {
+        background: var(--dark-card-bg);
+        color: var(--success-color);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        word-break: break-all;
+    }
+
+    .api-test-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .claims-grid {
+        max-height: 300px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .claims-grid::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .claims-grid::-webkit-scrollbar-track {
+        background: var(--glass-bg);
+    }
+
+    .claims-grid::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 2px;
+    }
+</style>
