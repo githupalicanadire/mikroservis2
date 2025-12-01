@@ -1,0 +1,285 @@
+@page
+@model Shopping.Web.Pages.TestFlowModel
+@{
+    ViewData["Title"] = "Automated Test Flow";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="test-flow-card glass-card">
+                <div class="test-header text-center mb-4">
+                    <i class="fas fa-robot test-icon"></i>
+                    <h2 class="test-title">Automated Test Flow Runner</h2>
+                    <p class="test-subtitle">Register → Order → Login → Logout akışını otomatik test et</p>
+                </div>
+
+                <!-- Test Configuration -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="config-section">
+                            <h5><i class="fas fa-cog text-primary me-2"></i>Test Configuration</h5>
+                            <form method="post" asp-page-handler="StartTest">
+                                <div class="mb-3">
+                                    <label class="form-label">Test User Email</label>
+                                    <input type="email" class="form-control" name="testEmail"
+                                           value="autotest@example.com" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Test User Password</label>
+                                    <input type="password" class="form-control" name="testPassword"
+                                           value="Test123!" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-control" name="firstName"
+                                           value="Auto" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" name="lastName"
+                                           value="Test" required />
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-play me-2"></i>Start Automated Test
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-section">
+                            <h5><i class="fas fa-info-circle text-info me-2"></i>Test Akışı</h5>
+                            <div class="test-steps">
+                                <div class="step-item">
+                                    <span class="step-number">1</span>
+                                    <span class="step-text">Register yeni kullanıcı</span>
+                                </div>
+                                <div class="step-item">
+                                    <span class="step-number">2</span>
+                                    <span class="step-text">Login ile giriş yap</span>
+                                </div>
+                                <div class="step-item">
+                                    <span class="step-number">3</span>
+                                    <span class="step-text">Sepete ürün ekle</span>
+                                </div>
+                                <div class="step-item">
+                                    <span class="step-number">4</span>
+                                    <span class="step-text">Sipariş oluştur</span>
+                                </div>
+                                <div class="step-item">
+                                    <span class="step-number">5</span>
+                                    <span class="step-text">User isolation doğrula</span>
+                                </div>
+                                <div class="step-item">
+                                    <span class="step-number">6</span>
+                                    <span class="step-text">Logout yap</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Progress -->
+                @if (Model.TestInProgress)
+                {
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="progress-section">
+                                <h5><i class="fas fa-spinner fa-spin text-warning me-2"></i>Test Running...</h5>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                         style="width: @(Model.TestProgress)%"></div>
+                                </div>
+                                <p class="current-step">Current Step: @Model.CurrentStep</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Test Results -->
+                @if (!string.IsNullOrEmpty(Model.TestResults))
+                {
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="results-section">
+                                <h5><i class="fas fa-chart-line text-success me-2"></i>Test Results</h5>
+                                <div class="test-output">
+                                    <pre>@Model.TestResults</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Manual Test Buttons -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="manual-tests">
+                            <h5><i class="fas fa-hand-pointer text-secondary me-2"></i>Manual Test Actions</h5>
+                            <div class="btn-group-custom">
+                                <form method="post" asp-page-handler="TestRegister" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="fas fa-user-plus me-1"></i>Test Register
+                                    </button>
+                                </form>
+                                <form method="post" asp-page-handler="TestLogin" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-success">
+                                        <i class="fas fa-sign-in-alt me-1"></i>Test Login
+                                    </button>
+                                </form>
+                                <form method="post" asp-page-handler="TestShopping" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-info">
+                                        <i class="fas fa-shopping-cart me-1"></i>Test Shopping
+                                    </button>
+                                </form>
+                                <form method="post" asp-page-handler="TestLogout" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Test Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demo Users -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="demo-section">
+                            <h5><i class="fas fa-users text-info me-2"></i>Demo Users for Testing</h5>
+                            <div class="demo-users-grid">
+                                <div class="demo-user">
+                                    <strong>Admin User</strong><br>
+                                    <code>admin@toyshop.com</code><br>
+                                    <code>Admin123!</code>
+                                </div>
+                                <div class="demo-user">
+                                    <strong>John Doe</strong><br>
+                                    <code>john.doe@example.com</code><br>
+                                    <code>User123!</code>
+                                </div>
+                                <div class="demo-user">
+                                    <strong>Jane Smith</strong><br>
+                                    <code>jane.smith@example.com</code><br>
+                                    <code>User123!</code>
+                                </div>
+                                <div class="demo-user">
+                                    <strong>Mike Wilson</strong><br>
+                                    <code>mike.wilson@example.com</code><br>
+                                    <code>User123!</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .test-flow-card {
+        padding: 3rem;
+    }
+
+    .test-icon {
+        font-size: 3rem;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+
+    .config-section, .info-section, .progress-section, .results-section, .manual-tests, .demo-section {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .test-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .step-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .step-number {
+        background: var(--primary-color);
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .test-output {
+        background: var(--dark-card-bg);
+        border-radius: 8px;
+        padding: 1.5rem;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .test-output pre {
+        color: var(--success-color);
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        white-space: pre-wrap;
+    }
+
+    .btn-group-custom {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .demo-users-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .demo-user {
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .demo-user code {
+        background: rgba(99, 102, 241, 0.2);
+        color: var(--primary-color);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+
+    .current-step {
+        color: var(--warning-color);
+        font-weight: 600;
+        margin: 0;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .test-icon {
+        animation: pulse 2s infinite;
+    }
+</style>

@@ -116,12 +116,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ConnectionStrings__DefaultConnection=Server=identitydb;Database=IdentityDb;User Id=sa;Password=SwN12345678;Encrypt=False;TrustServerCertificate=True
-      - IdentityServer__IssuerUri=http://identity.api:8080
-      - IdentityServer__BaseUrl=http://identity.api:8080
+      - IdentityServer__IssuerUri=http://localhost:6006
+      - IdentityServer__BaseUrl=http://localhost:6006
     depends_on:
       - identitydb
     ports:
       - "6006:8080"
+    restart: on-failure
 
   yarpapigateway:
     environment:
@@ -140,12 +141,14 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ApiSettings__GatewayAddress=http://yarpapigateway:8080
-      - IdentityServer__BaseUrl=http://identity.api:8080
+      - IdentityServer__BaseUrl=http://localhost:6006
     depends_on:
       - yarpapigateway
       - identity.api
     ports:
       - "6005:8080"
+    extra_hosts:
+      - "localhost:host-gateway"
 
 volumes:
   postgres_catalog:

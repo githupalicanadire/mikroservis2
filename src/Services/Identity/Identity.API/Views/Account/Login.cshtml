@@ -1,0 +1,78 @@
+@model Identity.API.Controllers.AccountLoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="auth-header">
+    <i class="fas fa-user-lock auth-icon"></i>
+    <h2 class="auth-title">Welcome Back</h2>
+    <p class="auth-subtitle">Sign in to continue to EShop</p>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+}
+
+<form asp-action="Login" method="post">
+    <input type="hidden" asp-for="@ViewData["ReturnUrl"]" name="returnUrl" />
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label">
+            <i class="fas fa-envelope me-2"></i>Email Address
+        </label>
+        <input asp-for="Email" class="form-control" placeholder="Enter your email" autofocus />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label">
+            <i class="fas fa-lock me-2"></i>Password
+        </label>
+        <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+
+    <div class="mb-4">
+        <div class="form-check">
+            <input asp-for="RememberMe" class="form-check-input" />
+            <label asp-for="RememberMe" class="form-check-label">
+                Remember me
+            </label>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 mb-3">
+        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+    </button>
+</form>
+
+<div class="auth-divider">
+    <span>OR</span>
+</div>
+
+<div class="text-center">
+    <p class="mb-3 text-muted">Don't have an account?</p>
+    <a asp-action="Register" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="btn btn-outline-primary w-100">
+        <i class="fas fa-user-plus me-2"></i>Create Account
+    </a>
+</div>
+
+<div class="text-center mt-4">
+    <small class="text-muted">
+        <strong>Demo Credentials:</strong><br>
+        Email: admin@toyshop.com<br>
+        Password: Admin123!
+    </small>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+}

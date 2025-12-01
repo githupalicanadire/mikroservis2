@@ -10,11 +10,13 @@ public class RegisterModel : PageModel
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<RegisterModel> _logger;
 
-    public RegisterModel(HttpClient httpClient, IConfiguration configuration)
+    public RegisterModel(HttpClient httpClient, IConfiguration configuration, ILogger<RegisterModel> logger)
     {
         _httpClient = httpClient;
         _configuration = configuration;
+        _logger = logger;
     }
 
     [BindProperty]
@@ -70,6 +72,7 @@ public class RegisterModel : PageModel
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "An error occurred during registration for user {Email}", RegisterData.Email);
             ErrorMessage = "An error occurred during registration. Please try again.";
             return Page();
         }

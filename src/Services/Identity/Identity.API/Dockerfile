@@ -19,4 +19,8 @@ RUN dotnet publish "./Identity.API.csproj" -c $BUILD_CONFIGURATION -o /app/publi
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Identity.API.dll"]
+COPY --from=build /src/Services/Identity/Identity.API/entrypoint.sh /app/entrypoint.sh
+USER root
+RUN chmod +x /app/entrypoint.sh
+USER app
+ENTRYPOINT ["/app/entrypoint.sh", "dotnet", "Identity.API.dll"]

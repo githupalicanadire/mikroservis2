@@ -119,7 +119,7 @@ app.Use(async (context, next) =>
     {
         // Store the original URL to redirect after login
         var returnUrl = context.Request.Path + context.Request.QueryString;
-        
+
         // Add a message to inform the user why they are being redirected
         string message;
         if (path?.StartsWith("/cart") == true)
@@ -138,7 +138,7 @@ app.Use(async (context, next) =>
         {
             message = "Please login to continue";
         }
-            
+
         context.Response.Redirect($"/Login?returnUrl={Uri.EscapeDataString(returnUrl)}&message={Uri.EscapeDataString(message)}");
         return;
     }

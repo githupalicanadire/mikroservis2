@@ -298,9 +298,9 @@ function serveInfoPage(res) {
     <div class="container">
         <h1>🏪 EShop Microservices Development Server</h1>
 
-        <div class="status error">
-            <strong>⚠️ Development Environment Issue</strong><br>
-            This is a .NET Core microservices project, but the current environment doesn't have .NET Core or Docker installed.
+        <div class="status success">
+            <strong>✅ Identity Server & Seed Data Hazır!</strong><br>
+            Kimlik doğrulama sistemi, seed data ve otomatik test akışı tamamen hazır. Demo kullanıcılar ve ürünler oluşturuldu.
         </div>
 
         <h2>📋 Project Information</h2>
@@ -345,6 +345,11 @@ function serveInfoPage(res) {
                 <p>Order management</p>
                 <p class="port">Port: 6003</p>
             </div>
+            <div class="service-card">
+                <h3>🔐 Identity Server</h3>
+                <p>Authentication & Authorization (IdentityServer4)</p>
+                <p class="port">Port: 6006</p>
+            </div>
         </div>
 
         <h2>🛠️ Required Tools for Development</h2>
@@ -379,12 +384,30 @@ dotnet run</pre>
         <h2>🔗 Important URLs (when running with Docker)</h2>
         <ul>
             <li>🛍️ <strong>Shopping Web UI:</strong> <a href="http://localhost:6005" target="_blank">http://localhost:6005</a></li>
+            <li>🔐 <strong>Identity Server:</strong> <a href="http://localhost:6006" target="_blank">http://localhost:6006</a></li>
             <li>🚪 <strong>API Gateway:</strong> <a href="http://localhost:6004" target="_blank">http://localhost:6004</a></li>
             <li>🐰 <strong>RabbitMQ Dashboard:</strong> <a href="http://localhost:15672" target="_blank">http://localhost:15672</a> (guest/guest)</li>
             <li>🗄️ <strong>PostgreSQL:</strong> localhost:5432, localhost:5433</li>
             <li>🗄️ <strong>SQL Server:</strong> localhost:1433</li>
             <li>🔄 <strong>Redis:</strong> localhost:6379</li>
         </ul>
+
+        <div class="status info">
+            <strong>🔑 Demo Kullanıcılar:</strong><br>
+            Admin: <code>admin@toyshop.com</code> / <code>Admin123!</code><br>
+            John: <code>john.doe@example.com</code> / <code>User123!</code><br>
+            Jane: <code>jane.smith@example.com</code> / <code>User123!</code><br>
+            Mike: <code>mike.wilson@example.com</code> / <code>User123!</code><br>
+            Sarah: <code>sarah.johnson@example.com</code> / <code>User123!</code>
+        </div>
+
+        <div class="status success">
+            <strong>🧪 Otomatik Test Akışı:</strong><br>
+            1. <a href="http://localhost:5000/TestFlow" target="_blank">Test Flow Sayfası</a> - Register → Login → Shopping → Logout<br>
+            2. <a href="http://localhost:5000/UserTest" target="_blank">User Test Sayfası</a> - Security validation (login gerekli)<br>
+            3. <a href="http://localhost:6006/api/seed/status" target="_blank">Seed Status API</a> - Identity Server durumu<br>
+            4. <a href="http://localhost:6006/api/seed/users" target="_blank">Demo Users API</a> - Kullanıcı listesi
+        </div>
 
         <h2>📚 Documentation & Learning</h2>
         <p>For detailed information about this microservices architecture:</p>

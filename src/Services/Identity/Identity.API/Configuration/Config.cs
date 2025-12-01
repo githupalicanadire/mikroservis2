@@ -70,6 +70,7 @@ public static class Config
                 {
                     "http://localhost:6005/signin-oidc",
                     "https://localhost:6005/signin-oidc",
+                    "http://localhost:5000/signin-oidc",
                     "http://shopping.web:8080/signin-oidc",
                     "https://shopping.web:8080/signin-oidc"
                 },
@@ -78,6 +79,7 @@ public static class Config
                 {
                     "http://localhost:6005/signout-callback-oidc",
                     "https://localhost:6005/signout-callback-oidc",
+                    "http://localhost:5000/signout-callback-oidc",
                     "http://shopping.web:8080/signout-callback-oidc",
                     "https://shopping.web:8080/signout-callback-oidc"
                 },

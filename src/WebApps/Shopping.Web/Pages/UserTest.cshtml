@@ -1,0 +1,258 @@
+@page
+@model Shopping.Web.Pages.UserTestModel
+@{
+    ViewData["Title"] = "User Isolation Test";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="test-card glass-card">
+                <div class="test-header text-center mb-4">
+                    <i class="fas fa-shield-alt test-icon"></i>
+                    <h2 class="test-title">User Isolation & Security Test</h2>
+                    <p class="test-subtitle">Verify user data separation and security measures</p>
+                </div>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="row">
+                        <!-- Current User Info -->
+                        <div class="col-md-6 mb-4">
+                            <div class="info-section">
+                                <h5><i class="fas fa-user text-primary me-2"></i>Current User Identity</h5>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <strong>User ID:</strong>
+                                        <span class="user-id">@Model.CurrentUserId</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Email:</strong>
+                                        <span>@Model.CurrentUserEmail</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Name:</strong>
+                                        <span>@Model.CurrentUserName</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Cart Items:</strong>
+                                        <span class="badge bg-primary">@Model.CartItemCount</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Total Orders:</strong>
+                                        <span class="badge bg-success">@Model.OrderCount</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Tests -->
+                        <div class="col-md-6 mb-4">
+                            <div class="info-section">
+                                <h5><i class="fas fa-lock text-warning me-2"></i>Security Validation</h5>
+                                <div class="test-results">
+                                    <div class="test-item @(Model.CartSecurityTest ? "test-pass" : "test-fail")">
+                                        <i class="fas @(Model.CartSecurityTest ? "fa-check-circle" : "fa-times-circle")"></i>
+                                        <span>Cart Isolation</span>
+                                    </div>
+                                    <div class="test-item @(Model.OrderSecurityTest ? "test-pass" : "test-fail")">
+                                        <i class="fas @(Model.OrderSecurityTest ? "fa-check-circle" : "fa-times-circle")"></i>
+                                        <span>Order Isolation</span>
+                                    </div>
+                                    <div class="test-item @(Model.UserIdentityTest ? "test-pass" : "test-fail")">
+                                        <i class="fas @(Model.UserIdentityTest ? "fa-check-circle" : "fa-times-circle")"></i>
+                                        <span>User Identity Security</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test Actions -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="info-section">
+                                <h5><i class="fas fa-flask text-info me-2"></i>Test Actions</h5>
+                                <div class="test-actions">
+                                    <form method="post" class="d-inline">
+                                        <button type="submit" asp-page-handler="AddTestProduct" class="btn btn-primary me-2">
+                                            <i class="fas fa-plus me-1"></i>Add Test Product to Cart
+                                        </button>
+                                    </form>
+                                    <form method="post" class="d-inline">
+                                        <button type="submit" asp-page-handler="CreateTestOrder" class="btn btn-success me-2">
+                                            <i class="fas fa-shopping-cart me-1"></i>Create Test Order
+                                        </button>
+                                    </form>
+                                    <form method="post" class="d-inline">
+                                        <button type="submit" asp-page-handler="RunSecurityTests" class="btn btn-warning">
+                                            <i class="fas fa-shield-alt me-1"></i>Run Security Tests
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test Results -->
+                    @if (!string.IsNullOrEmpty(Model.TestResults))
+                    {
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="info-section">
+                                    <h5><i class="fas fa-clipboard-list text-success me-2"></i>Test Results</h5>
+                                    <div class="test-output">
+                                        <pre>@Model.TestResults</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Demo Users -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="info-section">
+                                <h5><i class="fas fa-users text-secondary me-2"></i>Test with Demo Users</h5>
+                                <div class="demo-users">
+                                    <div class="alert alert-info">
+                                        <strong>Test Scenario:</strong>
+                                        <ol>
+                                            <li>Login as <code>admin@toyshop.com</code> / <code>Admin123!</code></li>
+                                            <li>Add items to cart and create orders</li>
+                                            <li>Logout and register a new account</li>
+                                            <li>Verify you only see your own data</li>
+                                            <li>Login back as admin and verify data isolation</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <i class="fas fa-lock fa-4x text-muted mb-3"></i>
+                        <h4>Authentication Required</h4>
+                        <p class="text-muted">Please login to test user isolation and security features.</p>
+                        <a asp-page="/Login" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Test
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .test-card {
+        padding: 3rem;
+    }
+
+    .test-icon {
+        font-size: 3rem;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+
+    .test-title {
+        color: var(--dark-text);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .test-subtitle {
+        color: var(--dark-text-secondary);
+    }
+
+    .info-section {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .info-section h5 {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .user-id {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        background: var(--dark-card-bg);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        color: var(--primary-color);
+    }
+
+    .test-results {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .test-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .test-pass {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.3);
+        color: #28a745;
+    }
+
+    .test-fail {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        color: #dc3545;
+    }
+
+    .test-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .test-output {
+        background: var(--dark-card-bg);
+        border-radius: 8px;
+        padding: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .test-output pre {
+        color: var(--success-color);
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .demo-users .alert {
+        background: rgba(23, 162, 184, 0.1);
+        border: 1px solid rgba(23, 162, 184, 0.3);
+        color: var(--dark-text);
+    }
+</style>

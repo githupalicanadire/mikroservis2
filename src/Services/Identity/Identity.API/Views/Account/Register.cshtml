@@ -1,0 +1,86 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="auth-header">
+    <i class="fas fa-user-plus auth-icon"></i>
+    <h2 class="auth-title">Create Account</h2>
+    <p class="auth-subtitle">Join EShop to start shopping</p>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+}
+
+<form asp-action="Register" method="post">
+    <input type="hidden" asp-for="@ViewData["ReturnUrl"]" name="returnUrl" />
+    
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="FirstName" class="form-label">
+                <i class="fas fa-user me-2"></i>First Name
+            </label>
+            <input asp-for="FirstName" class="form-control" placeholder="First name" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="LastName" class="form-label">
+                <i class="fas fa-user me-2"></i>Last Name
+            </label>
+            <input asp-for="LastName" class="form-control" placeholder="Last name" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label">
+            <i class="fas fa-envelope me-2"></i>Email Address
+        </label>
+        <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label">
+            <i class="fas fa-lock me-2"></i>Password
+        </label>
+        <input asp-for="Password" class="form-control" placeholder="Create a password" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+
+    <div class="mb-4">
+        <label asp-for="ConfirmPassword" class="form-label">
+            <i class="fas fa-lock me-2"></i>Confirm Password
+        </label>
+        <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 mb-3">
+        <i class="fas fa-user-plus me-2"></i>Create Account
+    </button>
+</form>
+
+<div class="auth-divider">
+    <span>OR</span>
+</div>
+
+<div class="text-center">
+    <p class="mb-3 text-muted">Already have an account?</p>
+    <a asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" class="btn btn-outline-primary w-100">
+        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+    </a>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+}

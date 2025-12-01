@@ -6,11 +6,16 @@ using Identity.API.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
-// Entity Framework
+// Entity Framework with retry policy for SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions => sqlServerOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null)));
 
 // ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -21,7 +26,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
-    
+
     // User settings
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedEmail = false;
@@ -55,7 +60,9 @@ builder.Services.AddCors(options =>
             "http://localhost:6005",
             "https://localhost:6005",
             "http://localhost:6004",
-            "https://localhost:6004"
+            "https://localhost:6004",
+            "http://localhost:6006",
+            "https://localhost:6006"
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
@@ -77,27 +84,52 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-// Initialize database
+// Initialize database and seed data
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    
-    context.Database.EnsureCreated();
-    
-    // Seed default user
-    if (!context.Users.Any())
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    try
     {
-        var defaultUser = new ApplicationUser
+        // Wait for database to be ready with retry logic
+        logger.LogInformation("Starting database initialization...");
+
+        // First, try to create the database if it doesn't exist
+        try
         {
-            UserName = "admin@toyshop.com",
-            Email = "admin@toyshop.com",
-            FirstName = "Admin",
-            LastName = "User",
-            EmailConfirmed = true
-        };
-        
-        await userManager.CreateAsync(defaultUser, "Admin123!");
+            // This will create the database if it doesn't exist
+            var connectionStringBuilder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(
+                context.Database.GetConnectionString());
+            var masterConnectionString = connectionStringBuilder.ToString().Replace(connectionStringBuilder.InitialCatalog, "master");
+
+            using var masterConnection = new Microsoft.Data.SqlClient.SqlConnection(masterConnectionString);
+            await masterConnection.OpenAsync();
+
+            var createDbCommand = new Microsoft.Data.SqlClient.SqlCommand(
+                $"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = '{connectionStringBuilder.InitialCatalog}') " +
+                $"CREATE DATABASE [{connectionStringBuilder.InitialCatalog}]", masterConnection);
+
+            await createDbCommand.ExecuteNonQueryAsync();
+            logger.LogInformation("Database existence verified/created");
+        }
+        catch (Exception dbCreateEx)
+        {
+            logger.LogWarning(dbCreateEx, "Could not create database manually, trying EnsureCreated");
+        }
+
+        // Now ensure the schema is created
+        await context.Database.EnsureCreatedAsync();
+        logger.LogInformation("Database schema ensured");
+
+        // Seed demo data
+        await app.SeedDemoDataAsync();
+        logger.LogInformation("Demo data seeding completed");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred during database initialization");
+        // Don't throw - let the application start anyway for debugging
     }
 }
 
@@ -107,6 +139,10 @@ app.UseRouting();
 app.UseIdentityServer();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllers();
 

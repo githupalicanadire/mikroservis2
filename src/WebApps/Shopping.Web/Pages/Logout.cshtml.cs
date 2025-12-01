@@ -11,12 +11,12 @@ public class LogoutModel : PageModel
         return await OnPostAsync();
     }
 
-    public async Task<IActionResult> OnPostAsync()
+    public Task<IActionResult> OnPostAsync()
     {
         // Sign out from both cookies and OIDC
-        return SignOut(new AuthenticationProperties
+        return Task.FromResult<IActionResult>(SignOut(new AuthenticationProperties
         {
             RedirectUri = Url.Page("/Index")
-        }, "Cookies", "oidc");
+        }, "Cookies", "oidc"));
     }
 }

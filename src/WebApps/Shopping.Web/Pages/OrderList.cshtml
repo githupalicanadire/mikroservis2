@@ -62,7 +62,7 @@
                                     {
                                         <tr>
                                             <td>
-                                                <span class="fw-bold">#@order.Id.ToString().Substring(0, 8)</span>
+                                                <span class="fw-bold">#@order.Id.ToString()[..8]</span>
                                             </td>
                                             <td>
                                                 <div>
@@ -71,7 +71,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="fw-bold text-primary">@order.OrderItems.Sum(x => x.Price * x.Quantity) TL</span>
+                                                <span class="fw-bold text-primary">@order.OrderItems.Sum(x => x.Price * x.Quantity).ToString("C") </span>
                                             </td>
                                             <td>
                                                 @{
